@@ -3,166 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Secure Cloud Portal | Fixed</title>
+    <title>High-Speed Cloud Portal</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
     <style>
-        :root { --admin: #1e293b; --editor: #0284c7; --reader: #64748b; --primary: #2563eb; --bg: #f1f5f9; }
-        
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background: var(--bg); 
-            display: flex; 
-            justify-content: center; 
-            padding: 20px; 
-            color: #1e293b; 
-            margin: 0;
-        }
-
-        .card { 
-            width: 100%; 
-            max-width: 800px; 
-            background: white; 
-            padding: 30px; 
-            border-radius: 16px; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
-            box-sizing: border-box; 
-            /* Prevent accidental text highlighting during interaction */
-            user-select: none; 
-            -webkit-user-select: none;
-        }
-
+        :root { --admin: #1e293b; --primary: #2563eb; --bg: #f1f5f9; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; margin: 0; user-select: none; -webkit-user-select: none; }
+        .card { width: 100%; max-width: 800px; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); box-sizing: border-box; }
         .hidden { display: none !important; }
         
-        /* Input Styling */
-        .input-group { position: relative; width: 100%; margin: 10px 0; }
+        .input-group { position: relative; margin: 10px 0; }
+        input { width: 100%; padding: 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 16px; outline: none; box-sizing: border-box; user-select: text; -webkit-user-select: text; }
         
-        input, select { 
-            width: 100%; 
-            padding: 14px; 
-            border: 1px solid #cbd5e1; 
-            border-radius: 8px; 
-            box-sizing: border-box; 
-            font-size: 16px; 
-            outline: none; 
-            /* Allow text selection inside inputs only */
-            user-select: text;
-            -webkit-user-select: text;
-        }
+        .eye-btn { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 20px; cursor: pointer; }
 
-        .eye-btn { 
-            position: absolute; 
-            right: 12px; 
-            top: 50%; 
-            transform: translateY(-50%); 
-            background: none; 
-            border: none; 
-            font-size: 20px; 
-            cursor: pointer; 
-        }
+        .btn-login { background: var(--primary); color: white; width: 100%; padding: 14px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 16px; margin-top: 10px; transition: opacity 0.1s; }
+        .btn-login:disabled { opacity: 0.6; cursor: not-allowed; }
 
-        /* Buttons */
-        button { 
-            padding: 12px 20px; 
-            border: none; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            font-weight: 600; 
-            transition: transform 0.1s, opacity 0.2s;
-        }
-        button:active { transform: scale(0.98); }
+        .nav-tabs { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 12px; }
+        .tab-btn { padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; background: #e2e8f0; color: #475569; }
+        .active-tab { background: var(--primary); color: white; }
 
-        .btn-login { 
-            background: var(--primary); 
-            color: white; 
-            width: 100%; 
-            margin-top: 15px; 
-            font-size: 16px;
-        }
-
-        .btn-blue { background: var(--primary); color: white; }
-        .btn-dark { background: var(--admin); color: white; }
-        .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 15px; }
-
-        /* Chat UI */
-        #chat-window { 
-            height: 350px; 
-            overflow-y: auto; 
-            padding: 15px; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 10px; 
-            background: #f8fafc; 
-            border-radius: 12px; 
-            border: 1px solid #e2e8f0; 
-        }
-        .msg { max-width: 80%; padding: 10px; border-radius: 12px; font-size: 14px; }
-        .sent { align-self: flex-end; background: var(--primary); color: white; }
-        .recv { align-self: flex-start; background: white; border: 1px solid #ddd; }
+        #chat-window { height: 350px; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0; }
+        .msg { max-width: 80%; padding: 10px; border-radius: 12px; font-size: 14px; position: relative; }
+        .sent { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 2px; }
+        .recv { align-self: flex-start; background: white; border: 1px solid #ddd; border-bottom-left-radius: 2px; }
     </style>
 </head>
 <body>
 
 <div class="card">
     <div id="login-screen">
-        <h2 style="text-align:center; margin-top:0;">Secure Login</h2>
-        <p style="text-align:center; color:#64748b; font-size:14px;">Access your cloud-synced portal</p>
-        
+        <h2 style="text-align:center; margin:0 0 10px 0;">Fast Access</h2>
         <div class="input-group">
-            <input type="text" id="login-u" placeholder="Username" autocomplete="off">
+            <input type="text" id="login-u" placeholder="Username" spellcheck="false">
         </div>
-        
         <div class="input-group">
-            <input type="password" id="login-p" placeholder="Password" autocomplete="off">
-            <button class="eye-btn" 
-                onmousedown="peek(true)" onmouseup="peek(false)" 
-                onmouseleave="peek(false)"
-                ontouchstart="peek(true)" ontouchend="peek(false)">👁️</button>
+            <input type="password" id="login-p" placeholder="Password">
+            <button class="eye-btn" onmousedown="peek(true)" onmouseup="peek(false)" ontouchstart="peek(true)" ontouchend="peek(false)">👁️</button>
         </div>
-
-        <button class="btn-login" onclick="login()">Login to System</button>
+        <button id="auth-btn" class="btn-login" onclick="fastLogin()">Login</button>
     </div>
 
-    <div id="main-portal" class="hidden">
+    <div id="main-app" class="hidden">
         <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom:15px;">
-            <h3 id="welcome-msg" style="margin:0">Welcome</h3>
-            <button onclick="location.reload()" style="background:#dc2626; color:white; padding:5px 12px; font-size:12px;">Logout</button>
+            <h4 id="user-tag" style="margin:0">User</h4>
+            <button onclick="location.reload()" style="color:red; background:none; border:none; font-weight:bold; cursor:pointer;">Logout</button>
         </div>
 
         <div class="nav-tabs">
-            <button class="btn-blue" onclick="showTab('chat')">Messenger</button>
-            <button id="admin-btn" class="btn-dark hidden" onclick="showTab('admin')">Admin Panel</button>
+            <button class="tab-btn active-tab" id="t-chat" onclick="tab('chat')">Chat</button>
+            <button class="tab-btn hidden" id="t-admin" onclick="tab('admin')">Admin</button>
         </div>
 
-        <div id="chat-tab" class="tab">
-            <select id="chat-target" style="margin-bottom:10px;"><option value="All">Everyone (Public)</option></select>
+        <div id="chat-sect" class="content">
+            <select id="chat-to" style="width:100%; padding:8px; margin-bottom:8px; border-radius:6px; border:1px solid #ccc;"></select>
             <div id="chat-window"></div>
-            <div style="display:flex; gap:8px; margin-top:10px;">
-                <input type="text" id="chat-msg" placeholder="Message..." style="margin:0;">
-                <button class="btn-blue" onclick="sendMessage()">Send</button>
+            <div style="display:flex; gap:5px; margin-top:8px;">
+                <input type="text" id="msg-input" placeholder="Message..." style="padding:10px;">
+                <button class="btn-login" style="width:80px; margin:0; padding:10px;" onclick="send()">Send</button>
             </div>
         </div>
 
-        <div id="admin-tab" class="tab hidden">
-            <h4>User Management</h4>
-            <div id="user-list-db" style="margin-bottom:15px; max-height: 200px; overflow-y: auto;"></div>
-            <hr>
-            <h5>Add New Account</h5>
-            <input type="text" id="new-user-name" placeholder="Name">
-            <input type="text" id="new-user-pass" placeholder="Password">
-            <select id="new-user-role">
-                <option value="reader">Reader</option>
-                <option value="editor">Editor</option>
-                <option value="admin">Admin</option>
-            </select>
-            <button class="btn-dark" style="width:100%" onclick="createUser()">Create User</button>
+        <div id="admin-sect" class="content hidden">
+            <div id="user-list" style="max-height:150px; overflow-y:auto; margin-bottom:10px; font-size:13px;"></div>
+            <input type="text" id="nu" placeholder="New Username" style="margin-bottom:5px;">
+            <input type="text" id="np" placeholder="Password" style="margin-bottom:5px;">
+            <select id="nr" style="margin-bottom:10px;"><option value="reader">Reader</option><option value="admin">Admin</option></select>
+            <button class="btn-login" onclick="addUser()" style="margin:0;">Create Account</button>
         </div>
     </div>
 </div>
 
 <script>
-    // 1. FIREBASE CONFIGURATION (Must be filled to work)
+    // --- 1. CONFIGURATION ---
     const firebaseConfig = {
         apiKey: "YOUR_API_KEY",
         authDomain: "YOUR_PROJECT.firebaseapp.com",
@@ -177,86 +92,83 @@
     const db = firebase.database();
     let currentUser = null;
 
-    // 2. PASSWORD PEEK LOGIC
-    function peek(show) { 
-        document.getElementById('login-p').type = show ? 'text' : 'password'; 
-    }
+    function peek(s) { document.getElementById('login-p').type = s ? 'text' : 'password'; }
 
-    // 3. LOGIN LOGIC
-    function login() {
-        const btn = document.querySelector('.btn-login');
+    // --- 2. FAST AUTHENTICATION (1s Target) ---
+    async function fastLogin() {
         const u = document.getElementById('login-u').value.trim();
         const p = document.getElementById('login-p').value.trim();
+        const btn = document.getElementById('auth-btn');
 
-        if(!u || !p) return alert("Please fill all fields");
-        
-        btn.innerText = "Authenticating...";
+        if (!u || !p) return;
         btn.disabled = true;
+        btn.innerText = "Connecting...";
 
-        db.ref('users').once('value', (snap) => {
+        // Faster Query: Search directly for the username node
+        db.ref('users').orderByChild('username').equalTo(u).once('value', (snap) => {
             const data = snap.val();
-            let found = null;
-            
-            for(let id in data) {
-                if(data[id].username === u && data[id].password === p) {
-                    found = data[id];
-                    break;
+            let matched = null;
+
+            if (data) {
+                for (let key in data) {
+                    if (data[key].password === p) {
+                        matched = data[key];
+                        break;
+                    }
                 }
             }
 
-            if(found) { 
-                currentUser = found; 
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('main-portal').classList.remove('hidden');
-                document.getElementById('welcome-msg').innerText = `Hi, ${currentUser.username}`;
-                
-                if(currentUser.role === 'admin') {
-                    document.getElementById('admin-btn').classList.remove('hidden');
-                    loadAdminData();
-                }
-                syncChat();
-                syncUserOptions();
+            if (matched) {
+                currentUser = matched;
+                launchApp();
             } else {
-                alert("Login Failed. User not found in Firebase.");
-                btn.innerText = "Login to System";
+                alert("Auth Failed");
                 btn.disabled = false;
+                btn.innerText = "Login";
             }
         });
     }
 
-    function showTab(id) {
-        document.querySelectorAll('.tab').forEach(t => t.classList.add('hidden'));
-        document.getElementById(id + '-tab').classList.remove('hidden');
+    // --- 3. APP INTERFACE ---
+    function launchApp() {
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('main-app').classList.remove('hidden');
+        document.getElementById('user-tag').innerText = currentUser.username + " (" + currentUser.role + ")";
+
+        if (currentUser.role === 'admin') {
+            document.getElementById('t-admin').classList.remove('hidden');
+            syncAdmin();
+        }
+        syncChat();
+        syncRecipients();
     }
 
-    // 4. CLOUD CHAT SYSTEM
-    function sendMessage() {
-        const input = document.getElementById('chat-msg');
-        const txt = input.value.trim();
-        const to = document.getElementById('chat-target').value;
-        if(!txt) return;
+    function tab(name) {
+        document.querySelectorAll('.content').forEach(c => c.classList.add('hidden'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-tab'));
+        document.getElementById(name + '-sect').classList.remove('hidden');
+        document.getElementById('t-' + name).classList.add('active-tab');
+    }
 
-        db.ref('chats').push({ 
-            from: currentUser.username, 
-            to: to, 
-            msg: txt, 
-            ts: Date.now() 
-        });
-        input.value = "";
+    // --- 4. CHAT & DATA ---
+    function send() {
+        const inp = document.getElementById('msg-input');
+        const to = document.getElementById('chat-to').value;
+        if (!inp.value.trim()) return;
+        db.ref('chats').push({ from: currentUser.username, to: to, msg: inp.value, ts: Date.now() });
+        inp.value = "";
     }
 
     function syncChat() {
-        db.ref('chats').on('value', (snap) => {
+        db.ref('chats').limitToLast(50).on('value', (snap) => {
             const win = document.getElementById('chat-window');
             win.innerHTML = "";
-            snap.forEach(msg => {
-                const m = msg.val();
-                // Filter: Show if Public, OR if user is sender, OR if user is recipient
-                if(m.to === 'All' || m.to === currentUser.username || m.from === currentUser.username) {
+            snap.forEach(child => {
+                const m = child.val();
+                if (m.to === 'All' || m.to === currentUser.username || m.from === currentUser.username) {
                     const div = document.createElement('div');
                     div.className = `msg ${m.from === currentUser.username ? 'sent' : 'recv'}`;
-                    const label = m.to === 'All' ? `[Public] ${m.from}` : `${m.from} ➔ ${m.to}`;
-                    div.innerHTML = `<small style="font-size:10px; display:block; opacity:0.7; font-weight:bold;">${label}</small>${m.msg}`;
+                    div.innerHTML = `<small style="font-size:9px; display:block; opacity:0.8;">${m.from}</small>${m.msg}`;
                     win.appendChild(div);
                 }
             });
@@ -264,48 +176,31 @@
         });
     }
 
-    // 5. USER SYNC & ADMIN
-    function syncUserOptions() {
-        db.ref('users').on('value', (snap) => {
-            const sel = document.getElementById('chat-target');
-            const currentVal = sel.value;
-            sel.innerHTML = '<option value="All">Everyone (Public)</option>';
+    function syncRecipients() {
+        db.ref('users').on('value', snap => {
+            const sel = document.getElementById('chat-to');
+            sel.innerHTML = '<option value="All">Global Chat</option>';
             snap.forEach(u => {
-                const userData = u.val();
-                if(userData.username !== currentUser.username) {
-                    const opt = document.createElement('option');
-                    opt.value = userData.username;
-                    opt.innerText = `Private: ${userData.username}`;
-                    sel.appendChild(opt);
+                if (u.val().username !== currentUser.username) {
+                    sel.innerHTML += `<option value="${u.val().username}">DM: ${u.val().username}</option>`;
                 }
             });
-            sel.value = currentVal;
         });
     }
 
-    function loadAdminData() {
-        db.ref('users').on('value', (snap) => {
-            const list = document.getElementById('user-list-db');
+    function syncAdmin() {
+        db.ref('users').on('value', snap => {
+            const list = document.getElementById('user-list');
             list.innerHTML = "";
             snap.forEach(u => {
-                const userData = u.val();
-                list.innerHTML += `<div style="padding:10px; background:#f1f5f9; margin-bottom:5px; border-radius:8px; border:1px solid #e2e8f0;">
-                    <b>${userData.username}</b> <small style="color:var(--primary)">(${userData.role})</small>
-                </div>`;
+                list.innerHTML += `<div style="padding:5px; border-bottom:1px solid #eee;">${u.val().username} [${u.val().role}]</div>`;
             });
         });
     }
 
-    function createUser() {
-        const u = document.getElementById('new-user-name').value.trim();
-        const p = document.getElementById('new-user-pass').value.trim();
-        const r = document.getElementById('new-user-role').value;
-        if(u && p) {
-            db.ref('users').push({ username: u, password: p, role: r });
-            document.getElementById('new-user-name').value = "";
-            document.getElementById('new-user-pass').value = "";
-            alert("Account Created!");
-        }
+    function addUser() {
+        const u = document.getElementById('nu').value, p = document.getElementById('np').value, r = document.getElementById('nr').value;
+        if (u && p) db.ref('users').push({ username: u, password: p, role: r });
     }
 </script>
 </body>
