@@ -3,34 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Secure Cloud Portal</title>
+    <title>Secure Cloud Portal | Fixed</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
     <style>
         :root { --admin: #1e293b; --editor: #0284c7; --reader: #64748b; --primary: #2563eb; --bg: #f1f5f9; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; color: #1e293b; margin: 0; overflow-x: hidden; }
-        .card { width: 100%; max-width: 800px; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); box-sizing: border-box; }
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: var(--bg); 
+            display: flex; 
+            justify-content: center; 
+            padding: 20px; 
+            color: #1e293b; 
+            margin: 0;
+        }
+
+        .card { 
+            width: 100%; 
+            max-width: 800px; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 16px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+            box-sizing: border-box; 
+            /* Prevent accidental text highlighting during interaction */
+            user-select: none; 
+            -webkit-user-select: none;
+        }
+
         .hidden { display: none !important; }
         
-        /* Input & Eye Container */
-        .input-group { position: relative; width: 100%; margin: 8px 0; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-size: 16px; outline: none; }
-        .eye-btn { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 20px; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
-
-        /* Fixed Swipe Login */
-        .swipe-track { position: relative; width: 100%; height: 64px; background: #e2e8f0; border-radius: 32px; margin-top: 25px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid #cbd5e1; touch-action: none; }
-        .swipe-text { font-size: 14px; font-weight: 600; color: #64748b; pointer-events: none; z-index: 1; user-select: none; }
-        .swipe-handle { position: absolute; left: 8px; width: 48px; height: 48px; background: var(--primary); border-radius: 50%; cursor: grab; display: flex; align-items: center; justify-content: center; color: white; z-index: 2; box-shadow: 0 4px 6px rgba(0,0,0,0.1); touch-action: none; user-select: none; -webkit-user-drag: none; }
+        /* Input Styling */
+        .input-group { position: relative; width: 100%; margin: 10px 0; }
         
-        /* Chat & Admin UI */
-        .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 15px; }
-        button { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        input, select { 
+            width: 100%; 
+            padding: 14px; 
+            border: 1px solid #cbd5e1; 
+            border-radius: 8px; 
+            box-sizing: border-box; 
+            font-size: 16px; 
+            outline: none; 
+            /* Allow text selection inside inputs only */
+            user-select: text;
+            -webkit-user-select: text;
+        }
+
+        .eye-btn { 
+            position: absolute; 
+            right: 12px; 
+            top: 50%; 
+            transform: translateY(-50%); 
+            background: none; 
+            border: none; 
+            font-size: 20px; 
+            cursor: pointer; 
+        }
+
+        /* Buttons */
+        button { 
+            padding: 12px 20px; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            transition: transform 0.1s, opacity 0.2s;
+        }
+        button:active { transform: scale(0.98); }
+
+        .btn-login { 
+            background: var(--primary); 
+            color: white; 
+            width: 100%; 
+            margin-top: 15px; 
+            font-size: 16px;
+        }
+
         .btn-blue { background: var(--primary); color: white; }
         .btn-dark { background: var(--admin); color: white; }
-        
-        #chat-window { height: 350px; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; }
-        .msg { max-width: 80%; padding: 10px; border-radius: 12px; font-size: 14px; word-wrap: break-word; }
+        .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 15px; }
+
+        /* Chat UI */
+        #chat-window { 
+            height: 350px; 
+            overflow-y: auto; 
+            padding: 15px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 10px; 
+            background: #f8fafc; 
+            border-radius: 12px; 
+            border: 1px solid #e2e8f0; 
+        }
+        .msg { max-width: 80%; padding: 10px; border-radius: 12px; font-size: 14px; }
         .sent { align-self: flex-end; background: var(--primary); color: white; }
         .recv { align-self: flex-start; background: white; border: 1px solid #ddd; }
     </style>
@@ -39,27 +106,28 @@
 
 <div class="card">
     <div id="login-screen">
-        <h2 style="text-align:center">Cloud Secure Portal</h2>
-        <input type="text" id="login-u" placeholder="Username">
+        <h2 style="text-align:center; margin-top:0;">Secure Login</h2>
+        <p style="text-align:center; color:#64748b; font-size:14px;">Access your cloud-synced portal</p>
+        
         <div class="input-group">
-            <input type="password" id="login-p" placeholder="Password">
-            <button class="eye-btn" onmousedown="peek(true)" onmouseup="peek(false)" ontouchstart="peek(true)" ontouchend="peek(false)">👁️</button>
-        </div>
-
-        <div class="swipe-track" id="track">
-            <span class="swipe-text">Swipe to Login →</span>
-            <div class="swipe-handle" id="handle">🚀</div>
+            <input type="text" id="login-u" placeholder="Username" autocomplete="off">
         </div>
         
-        <p style="text-align:center; font-size:12px; color:#94a3b8; margin-top:15px;">
-            Cannot swipe? <span style="text-decoration:underline; cursor:pointer" onclick="login()">Click here to login</span>
-        </p>
+        <div class="input-group">
+            <input type="password" id="login-p" placeholder="Password" autocomplete="off">
+            <button class="eye-btn" 
+                onmousedown="peek(true)" onmouseup="peek(false)" 
+                onmouseleave="peek(false)"
+                ontouchstart="peek(true)" ontouchend="peek(false)">👁️</button>
+        </div>
+
+        <button class="btn-login" onclick="login()">Login to System</button>
     </div>
 
     <div id="main-portal" class="hidden">
-        <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom:10px;">
-            <h3 id="welcome-msg">Welcome</h3>
-            <button onclick="location.reload()" style="background:#dc2626; color:white; padding:5px 10px; font-size:12px;">Logout</button>
+        <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom:15px;">
+            <h3 id="welcome-msg" style="margin:0">Welcome</h3>
+            <button onclick="location.reload()" style="background:#dc2626; color:white; padding:5px 12px; font-size:12px;">Logout</button>
         </div>
 
         <div class="nav-tabs">
@@ -78,7 +146,7 @@
 
         <div id="admin-tab" class="tab hidden">
             <h4>User Management</h4>
-            <div id="user-list-db" style="margin-bottom:15px;"></div>
+            <div id="user-list-db" style="margin-bottom:15px; max-height: 200px; overflow-y: auto;"></div>
             <hr>
             <h5>Add New Account</h5>
             <input type="text" id="new-user-name" placeholder="Name">
@@ -94,7 +162,7 @@
 </div>
 
 <script>
-    // 1. FIREBASE CONFIGURATION
+    // 1. FIREBASE CONFIGURATION (Must be filled to work)
     const firebaseConfig = {
         apiKey: "YOUR_API_KEY",
         authDomain: "YOUR_PROJECT.firebaseapp.com",
@@ -109,59 +177,49 @@
     const db = firebase.database();
     let currentUser = null;
 
-    // 2. PASSWORD PEEK
-    function peek(show) { document.getElementById('login-p').type = show ? 'text' : 'password'; }
+    // 2. PASSWORD PEEK LOGIC
+    function peek(show) { 
+        document.getElementById('login-p').type = show ? 'text' : 'password'; 
+    }
 
-    // 3. IMPROVED SWIPE LOGIC
-    const handle = document.getElementById('handle'), track = document.getElementById('track');
-    let isDragging = false, startX = 0;
-
-    const getCoord = (e) => e.touches ? e.touches[0].clientX : e.clientX;
-
-    const onStart = (e) => { isDragging = true; startX = getCoord(e); handle.style.transition = 'none'; };
-    const onMove = (e) => {
-        if (!isDragging) return;
-        let x = getCoord(e);
-        let walk = x - startX;
-        let limit = track.offsetWidth - handle.offsetWidth - 16;
-        if (walk < 0) walk = 0; if (walk > limit) walk = limit;
-        handle.style.transform = `translateX(${walk}px)`;
-        if (walk >= limit * 0.98) { isDragging = false; login(); }
-    };
-    const onEnd = () => { isDragging = false; handle.style.transition = '0.3s'; handle.style.transform = 'translateX(0px)'; };
-
-    handle.addEventListener('mousedown', onStart);
-    handle.addEventListener('touchstart', onStart, {passive: true});
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('touchmove', onMove, {passive: false}); // Prevent scroll
-    window.addEventListener('mouseup', onEnd);
-    window.addEventListener('touchend', onEnd);
-
-    // 4. LOGIN & APP LOGIC
+    // 3. LOGIN LOGIC
     function login() {
-        const u = document.getElementById('login-u').value;
-        const p = document.getElementById('login-p').value;
+        const btn = document.querySelector('.btn-login');
+        const u = document.getElementById('login-u').value.trim();
+        const p = document.getElementById('login-p').value.trim();
+
+        if(!u || !p) return alert("Please fill all fields");
+        
+        btn.innerText = "Authenticating...";
+        btn.disabled = true;
 
         db.ref('users').once('value', (snap) => {
             const data = snap.val();
             let found = null;
+            
             for(let id in data) {
-                if(data[id].username === u && data[id].password === p) found = data[id];
+                if(data[id].username === u && data[id].password === p) {
+                    found = data[id];
+                    break;
+                }
             }
+
             if(found) { 
                 currentUser = found; 
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('main-portal').classList.remove('hidden');
                 document.getElementById('welcome-msg').innerText = `Hi, ${currentUser.username}`;
+                
                 if(currentUser.role === 'admin') {
                     document.getElementById('admin-btn').classList.remove('hidden');
                     loadAdminData();
                 }
                 syncChat();
-                syncUsers();
+                syncUserOptions();
             } else {
-                alert("Login Failed. Check Firebase users.");
-                handle.style.transform = 'translateX(0px)';
+                alert("Login Failed. User not found in Firebase.");
+                btn.innerText = "Login to System";
+                btn.disabled = false;
             }
         });
     }
@@ -171,13 +229,20 @@
         document.getElementById(id + '-tab').classList.remove('hidden');
     }
 
-    // 5. CHAT SYSTEM
+    // 4. CLOUD CHAT SYSTEM
     function sendMessage() {
-        const txt = document.getElementById('chat-msg').value;
+        const input = document.getElementById('chat-msg');
+        const txt = input.value.trim();
         const to = document.getElementById('chat-target').value;
         if(!txt) return;
-        db.ref('chats').push({ from: currentUser.username, to: to, msg: txt, ts: Date.now() });
-        document.getElementById('chat-msg').value = "";
+
+        db.ref('chats').push({ 
+            from: currentUser.username, 
+            to: to, 
+            msg: txt, 
+            ts: Date.now() 
+        });
+        input.value = "";
     }
 
     function syncChat() {
@@ -186,10 +251,12 @@
             win.innerHTML = "";
             snap.forEach(msg => {
                 const m = msg.val();
+                // Filter: Show if Public, OR if user is sender, OR if user is recipient
                 if(m.to === 'All' || m.to === currentUser.username || m.from === currentUser.username) {
                     const div = document.createElement('div');
                     div.className = `msg ${m.from === currentUser.username ? 'sent' : 'recv'}`;
-                    div.innerHTML = `<small style="font-size:10px; display:block; opacity:0.7">${m.from} ➔ ${m.to}</small>${m.msg}`;
+                    const label = m.to === 'All' ? `[Public] ${m.from}` : `${m.from} ➔ ${m.to}`;
+                    div.innerHTML = `<small style="font-size:10px; display:block; opacity:0.7; font-weight:bold;">${label}</small>${m.msg}`;
                     win.appendChild(div);
                 }
             });
@@ -197,16 +264,22 @@
         });
     }
 
-    // 6. ADMIN & USER SYNC
-    function syncUsers() {
+    // 5. USER SYNC & ADMIN
+    function syncUserOptions() {
         db.ref('users').on('value', (snap) => {
             const sel = document.getElementById('chat-target');
+            const currentVal = sel.value;
             sel.innerHTML = '<option value="All">Everyone (Public)</option>';
             snap.forEach(u => {
-                if(u.val().username !== currentUser.username) {
-                    sel.innerHTML += `<option value="${u.val().username}">Private: ${u.val().username}</option>`;
+                const userData = u.val();
+                if(userData.username !== currentUser.username) {
+                    const opt = document.createElement('option');
+                    opt.value = userData.username;
+                    opt.innerText = `Private: ${userData.username}`;
+                    sel.appendChild(opt);
                 }
             });
+            sel.value = currentVal;
         });
     }
 
@@ -215,16 +288,24 @@
             const list = document.getElementById('user-list-db');
             list.innerHTML = "";
             snap.forEach(u => {
-                list.innerHTML += `<div style="padding:10px; background:#f1f5f9; margin-bottom:5px; border-radius:8px;"><b>${u.val().username}</b> (${u.val().role})</div>`;
+                const userData = u.val();
+                list.innerHTML += `<div style="padding:10px; background:#f1f5f9; margin-bottom:5px; border-radius:8px; border:1px solid #e2e8f0;">
+                    <b>${userData.username}</b> <small style="color:var(--primary)">(${userData.role})</small>
+                </div>`;
             });
         });
     }
 
     function createUser() {
-        const u = document.getElementById('new-user-name').value;
-        const p = document.getElementById('new-user-pass').value;
+        const u = document.getElementById('new-user-name').value.trim();
+        const p = document.getElementById('new-user-pass').value.trim();
         const r = document.getElementById('new-user-role').value;
-        if(u && p) db.ref('users').push({ username: u, password: p, role: r });
+        if(u && p) {
+            db.ref('users').push({ username: u, password: p, role: r });
+            document.getElementById('new-user-name').value = "";
+            document.getElementById('new-user-pass').value = "";
+            alert("Account Created!");
+        }
     }
 </script>
 </body>
