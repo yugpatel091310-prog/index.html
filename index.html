@@ -1,298 +1,211 @@
-        <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Portal | Swipe, Chat & Admin</title>
+    <title>Cloud Portal | Firebase Realtime</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
     <style>
-        :root { 
-            --admin-color: #1e293b; 
-            --editor-color: #0284c7; 
-            --reader-color: #64748b;
-            --primary: #2563eb; 
-            --bg: #f1f5f9; 
-            --chat-sent: #2563eb;
-            --chat-received: #ffffff;
-        }
-        
-        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; color: #1e293b; margin: 0; }
-        .card { width: 100%; max-width: 800px; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); }
+        :root { --admin: #1e293b; --editor: #0284c7; --reader: #64748b; --primary: #2563eb; --bg: #f1f5f9; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; color: #1e293b; margin: 0; }
+        .card { width: 100%; max-width: 800px; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         .hidden { display: none !important; }
         
-        /* UI Elements */
-        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-size: 14px; outline: none; }
-        input:focus { border-color: var(--primary); ring: 2px var(--primary); }
-        
-        /* Swipe to Login */
-        .swipe-container { position: relative; width: 100%; height: 60px; background: #e2e8f0; border-radius: 30px; margin-top: 20px; display: flex; align-items: center; justify-content: center; overflow: hidden; user-select: none; border: 2px solid #cbd5e1; }
-        .swipe-text { font-size: 14px; font-weight: 600; color: #64748b; pointer-events: none; z-index: 1; }
-        .swipe-handle { position: absolute; left: 6px; width: 48px; height: 48px; background: var(--primary); border-radius: 50%; cursor: grab; display: flex; align-items: center; justify-content: center; color: white; z-index: 2; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.1s linear; }
-        .swipe-handle:active { cursor: grabbing; }
+        /* Swipe Login */
+        .swipe-track { position: relative; width: 100%; height: 60px; background: #e2e8f0; border-radius: 30px; margin-top: 20px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid #cbd5e1; }
+        .swipe-handle { position: absolute; left: 6px; width: 48px; height: 48px; background: var(--primary); border-radius: 50%; cursor: grab; display: flex; align-items: center; justify-content: center; color: white; z-index: 2; transition: transform 0.1s linear; }
 
-        /* Tabs & Buttons */
-        .tab-nav { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; }
+        /* Tabs */
+        .nav { display: flex; gap: 10px; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #e2e8f0; }
         button { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; }
-        .btn-main { background: var(--primary); color: white; }
-        .btn-admin { background: var(--admin-color); color: white; }
-        .btn-danger { background: #dc2626; color: white; }
-        .btn-small { padding: 5px 10px; font-size: 12px; }
+        .btn-blue { background: var(--primary); color: white; }
+        .btn-dark { background: var(--admin); color: white; }
+        
+        /* Chat */
+        #chat-win { height: 350px; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; }
+        .msg { max-width: 75%; padding: 10px; border-radius: 12px; font-size: 13px; }
+        .sent { align-self: flex-end; background: var(--primary); color: white; }
+        .recv { align-self: flex-start; background: white; border: 1px solid #ddd; }
 
-        /* Chat UI */
-        #chat-window { height: 350px; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; }
-        .msg { max-width: 75%; padding: 10px 14px; border-radius: 15px; font-size: 13px; line-height: 1.4; position: relative; }
-        .msg-sent { align-self: flex-end; background: var(--chat-sent); color: white; border-bottom-right-radius: 2px; }
-        .msg-received { align-self: flex-start; background: var(--chat-received); color: #1e293b; border: 1px solid #e2e8f0; border-bottom-left-radius: 2px; }
-        .msg-meta { font-size: 10px; opacity: 0.7; margin-bottom: 4px; display: block; font-weight: bold; }
-
-        /* Hold to View Eye */
-        .input-wrapper { position: relative; width: 100%; }
-        .view-btn { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 18px; z-index: 5; user-select: none; }
-
-        /* Admin Styles */
-        .user-card { background: #f1f5f9; padding: 12px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #e2e8f0; }
-        .role-badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; color: white; text-transform: uppercase; margin-left: 5px; }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; }
+        .eye { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; background: none; border: none; font-size: 18px; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <div id="login-section">
-        <h2 style="text-align:center; margin-top:0;">Secure Access</h2>
-        <p style="text-align:center; color:#64748b; font-size:14px;">Enter credentials and swipe to enter</p>
-        
-        <input type="text" id="login-username" placeholder="Username">
-        <div class="input-wrapper">
-            <input type="password" id="login-password" placeholder="Password">
-            <button class="view-btn" 
-                onmousedown="togglePW('login-password', true)" 
-                onmouseup="togglePW('login-password', false)"
-                onmouseleave="togglePW('login-password', false)"
-                ontouchstart="togglePW('login-password', true)" 
-                ontouchend="togglePW('login-password', false)">👁️</button>
+    <div id="login-box">
+        <h2 style="text-align:center">Cloud Secure Portal</h2>
+        <input type="text" id="user" placeholder="Username">
+        <div style="position:relative">
+            <input type="password" id="pass" placeholder="Password">
+            <button class="eye" onmousedown="peek(true)" onmouseup="peek(false)" ontouchstart="peek(true)" ontouchend="peek(false)">👁️</button>
         </div>
-
-        <div class="swipe-container" id="swipe-track">
-            <span class="swipe-text">Swipe to Login →</span>
-            <div class="swipe-handle" id="swipe-handle">🚀</div>
+        <div class="swipe-track" id="track">
+            <span style="color:#64748b; font-size:14px;">Swipe to Login →</span>
+            <div class="swipe-handle" id="handle">🚀</div>
         </div>
     </div>
 
-    <div id="content-section" class="hidden">
-        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <div>
-                <h3 id="welcome-msg" style="margin:0">Welcome</h3>
-                <span id="role-display" class="role-badge"></span>
-            </div>
-            <button class="btn-danger btn-small" onclick="location.reload()">Logout</button>
+    <div id="app-box" class="hidden">
+        <div style="display:flex; justify-content: space-between; align-items:center;">
+            <h3 id="hi">Welcome</h3>
+            <button onclick="location.reload()" style="background:#dc2626; color:white">Logout</button>
         </div>
 
-        <div class="tab-nav">
-            <button class="btn-main" onclick="switchTab('dashboard-tab')">Dashboard</button>
-            <button class="btn-main" style="background:#64748b" onclick="switchTab('chat-tab')">Chat</button>
-            <button id="admin-nav-btn" class="btn-admin hidden" onclick="switchTab('admin-tab')">Users</button>
+        <div class="nav">
+            <button class="btn-blue" onclick="tab('chat')">Chat</button>
+            <button id="adm-btn" class="btn-dark hidden" onclick="tab('adm')">Admin</button>
         </div>
 
-        <div id="dashboard-tab" class="tab-content">
-            <div id="portal-content" style="background:#fffbeb; padding:20px; border-radius:12px; border-left:5px solid #f59e0b;">
-                <p id="display-text" style="margin:0;"></p>
-            </div>
-            <div id="editor-tools" class="hidden" style="margin-top:20px; padding-top:15px; border-top:1px solid #e2e8f0;">
-                <h4>Edit Content</h4>
-                <textarea id="edit-area" rows="3"></textarea>
-                <button class="btn-main" onclick="updatePortalContent()">Save Content</button>
+        <div id="chat-tab" class="tab">
+            <select id="target"><option value="All">Everyone (Public)</option></select>
+            <div id="chat-win"></div>
+            <div style="display:flex; gap:5px; margin-top:10px;">
+                <input type="text" id="m-in" placeholder="Message..." style="margin:0">
+                <button class="btn-blue" onclick="send()">Send</button>
             </div>
         </div>
 
-        <div id="chat-tab" class="tab-content hidden">
-            <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-                <label style="font-size:12px; font-weight:bold;">Recipient:</label>
-                <select id="chat-target" style="margin:0; padding:5px; flex:1;">
-                    <option value="All">Everyone (Public)</option>
-                </select>
+        <div id="adm-tab" class="tab hidden">
+            <h4>User Management</h4>
+            <div id="u-list"></div>
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:5px;">
+                <input type="text" id="nu" placeholder="New User">
+                <input type="text" id="np" placeholder="Pass">
+                <select id="nr"><option value="reader">Reader</option><option value="admin">Admin</option></select>
             </div>
-            <div id="chat-window"></div>
-            <div style="display:flex; gap:8px; margin-top:10px;">
-                <input type="text" id="chat-input" placeholder="Type a message..." style="margin:0;">
-                <button class="btn-main" onclick="sendChatMessage()">Send</button>
-            </div>
-        </div>
-
-        <div id="admin-tab" class="tab-content hidden">
-            <h4>Add New User</h4>
-            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px;">
-                <input type="text" id="new-u" placeholder="User">
-                <input type="text" id="new-p" placeholder="Pass">
-                <select id="new-r" style="margin:8px 0;">
-                    <option value="reader">Reader</option>
-                    <option value="editor">Editor</option>
-                    <option value="admin">Admin</option>
-                </select>
-            </div>
-            <button class="btn-admin" style="width:100%; margin-bottom:20px;" onclick="createNewUser()">Create User</button>
-            
-            <h4>Manage Users</h4>
-            <div id="user-list-container"></div>
+            <button class="btn-dark" style="width:100%" onclick="addUser()">Create User</button>
         </div>
     </div>
 </div>
 
 <script>
-    // --- DATABASE MOCKUP ---
-    const DEFAULT_ADMIN = { username: "Yug Patel", password: "yugpatel1309", role: "admin" };
-    let users = JSON.parse(localStorage.getItem('sys_users')) || [DEFAULT_ADMIN];
-    let chats = JSON.parse(localStorage.getItem('sys_chats')) || [];
-    let portalData = JSON.parse(localStorage.getItem('sys_portal')) || { text: "Welcome to the secure administrative interface. No messages yet." };
+    // --- !!! REPLACE WITH YOUR FIREBASE CONFIG !!! ---
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_PROJECT.firebaseapp.com",
+        databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+        projectId: "YOUR_PROJECT",
+        storageBucket: "YOUR_PROJECT.appspot.com",
+        messagingSenderId: "YOUR_ID",
+        appId: "YOUR_APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
     let currentUser = null;
 
-    // --- SECURITY LOGIC ---
-    function togglePW(id, show) { document.getElementById(id).type = show ? "text" : "password"; }
+    // Peek Logic
+    function peek(s) { document.getElementById('pass').type = s ? 'text' : 'password'; }
 
-    const handle = document.getElementById('swipe-handle');
-    const track = document.getElementById('swipe-track');
-    let isSwiping = false, startX = 0;
+    // Swipe Logic
+    const h = document.getElementById('handle'), t = document.getElementById('track');
+    let swiping = false, start = 0;
+    h.addEventListener('mousedown', (e) => { swiping = true; start = e.clientX; h.style.transition = 'none'; });
+    h.addEventListener('touchstart', (e) => { swiping = true; start = e.touches[0].clientX; h.style.transition = 'none'; });
+    window.addEventListener('mousemove', (e) => {
+        if(!swiping) return;
+        let d = e.clientX - start;
+        let max = t.offsetWidth - h.offsetWidth - 12;
+        if(d < 0) d = 0; if(d > max) d = max;
+        h.style.transform = `translateX(${d}px)`;
+        if(d >= max * 0.98) { swiping = false; login(); }
+    });
+    window.addEventListener('mouseup', () => { swiping = false; h.style.transition = '0.3s'; h.style.transform = 'translateX(0px)'; });
 
-    handle.addEventListener('mousedown', startSwipe);
-    handle.addEventListener('touchstart', startSwipe);
-    window.addEventListener('mousemove', moveSwipe);
-    window.addEventListener('touchmove', moveSwipe);
-    window.addEventListener('mouseup', endSwipe);
-    window.addEventListener('touchend', endSwipe);
-
-    function startSwipe(e) { isSwiping = true; startX = (e.type === 'touchstart') ? e.touches[0].clientX : e.clientX; handle.style.transition = 'none'; }
-    function moveSwipe(e) {
-        if (!isSwiping) return;
-        let x = (e.type === 'touchmove') ? e.touches[0].clientX : e.clientX;
-        let delta = x - startX;
-        let limit = track.offsetWidth - handle.offsetWidth - 12;
-        if (delta < 0) delta = 0; if (delta > limit) delta = limit;
-        handle.style.transform = `translateX(${delta}px)`;
-        if (delta >= limit * 0.96) { isSwiping = false; attemptLogin(); }
-    }
-    function endSwipe() { isSwiping = false; handle.style.transition = '0.3s ease'; handle.style.transform = 'translateX(0px)'; }
-
-    function attemptLogin() {
-        const u = document.getElementById('login-username').value;
-        const p = document.getElementById('login-password').value;
-        const user = users.find(x => x.username === u && x.password === p);
-        if (user) { currentUser = user; initPortal(); } else { alert("Access Denied"); }
-    }
-
-    // --- PORTAL LOGIC ---
-    function initPortal() {
-        document.getElementById('login-section').classList.add('hidden');
-        document.getElementById('content-section').classList.remove('hidden');
-        document.getElementById('welcome-msg').innerText = `Hello, ${currentUser.username}`;
+    // Login (Checks Cloud for Users)
+    function login() {
+        const u = document.getElementById('user').value;
+        const p = document.getElementById('pass').value;
         
-        const rBadge = document.getElementById('role-display');
-        rBadge.innerText = currentUser.role;
-        rBadge.style.background = currentUser.role === 'admin' ? 'var(--admin-color)' : (currentUser.role === 'editor' ? 'var(--editor-color)' : 'var(--reader-color)');
-
-        document.getElementById('display-text').innerText = portalData.text;
-
-        if (currentUser.role === 'admin' || currentUser.role === 'editor') {
-            document.getElementById('editor-tools').classList.remove('hidden');
-            document.getElementById('edit-area').value = portalData.text;
-        }
-        if (currentUser.role === 'admin') {
-            document.getElementById('admin-nav-btn').classList.remove('hidden');
-            refreshAdminList();
-        }
-        
-        refreshChatRecipients();
-        renderChatMessages();
-    }
-
-    function switchTab(tabId) {
-        document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
-        document.getElementById(tabId).classList.remove('hidden');
-    }
-
-    function updatePortalContent() {
-        portalData.text = document.getElementById('edit-area').value;
-        document.getElementById('display-text').innerText = portalData.text;
-        localStorage.setItem('sys_portal', JSON.stringify(portalData));
-        alert("Portal Updated");
-    }
-
-    // --- CHAT LOGIC ---
-    function refreshChatRecipients() {
-        const select = document.getElementById('chat-target');
-        select.innerHTML = '<option value="All">Everyone (Public)</option>';
-        users.forEach(u => {
-            if (u.username !== currentUser.username) {
-                const opt = document.createElement('option');
-                opt.value = u.username;
-                opt.innerText = `Private: ${u.username}`;
-                select.appendChild(opt);
+        db.ref('users').once('value', (snap) => {
+            const data = snap.val();
+            let found = null;
+            for(let id in data) {
+                if(data[id].username === u && data[id].password === p) found = data[id];
             }
+            if(found) { currentUser = found; startApp(); } else { alert("Invalid!"); h.style.transform = 'translateX(0px)'; }
         });
     }
 
-    function sendChatMessage() {
-        const input = document.getElementById('chat-input');
-        const target = document.getElementById('chat-target').value;
-        if (!input.value.trim()) return;
+    function startApp() {
+        document.getElementById('login-box').classList.add('hidden');
+        document.getElementById('app-box').classList.remove('hidden');
+        document.getElementById('hi').innerText = `Hello, ${currentUser.username}`;
+        if(currentUser.role === 'admin') {
+            document.getElementById('adm-btn').classList.remove('hidden');
+            loadUsers();
+        }
+        loadRecipients();
+        listenMessages();
+    }
 
-        chats.push({
+    function tab(name) {
+        document.querySelectorAll('.tab').forEach(x => x.classList.add('hidden'));
+        document.getElementById(name + '-tab').classList.remove('hidden');
+    }
+
+    // Cloud Chat
+    function send() {
+        const txt = document.getElementById('m-in').value;
+        const to = document.getElementById('target').value;
+        if(!txt) return;
+        db.ref('chats').push({
             from: currentUser.username,
-            to: target,
-            msg: input.value,
-            ts: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+            to: to,
+            msg: txt,
+            ts: Date.now()
         });
-
-        localStorage.setItem('sys_chats', JSON.stringify(chats));
-        input.value = "";
-        renderChatMessages();
+        document.getElementById('m-in').value = "";
     }
 
-    function renderChatMessages() {
-        const win = document.getElementById('chat-window');
-        win.innerHTML = "";
-        chats.forEach(c => {
-            const isVisible = c.to === "All" || c.to === currentUser.username || c.from === currentUser.username;
-            if (isVisible) {
-                const div = document.createElement('div');
-                div.className = `msg ${c.from === currentUser.username ? 'msg-sent' : 'msg-received'}`;
-                const label = c.to === "All" ? `[Public] ${c.from}` : `${c.from} ➔ ${c.to}`;
-                div.innerHTML = `<span class="msg-meta">${label} • ${c.ts}</span>${c.msg}`;
-                win.appendChild(div);
-            }
+    function listenMessages() {
+        db.ref('chats').on('value', (snap) => {
+            const win = document.getElementById('chat-win');
+            win.innerHTML = "";
+            snap.forEach(child => {
+                const c = child.val();
+                if(c.to === 'All' || c.to === currentUser.username || c.from === currentUser.username) {
+                    const d = document.createElement('div');
+                    d.className = `msg ${c.from === currentUser.username ? 'sent' : 'recv'}`;
+                    d.innerHTML = `<small style="font-size:9px; display:block">${c.from} ➔ ${c.to}</small>${c.msg}`;
+                    win.appendChild(d);
+                }
+            });
+            win.scrollTop = win.scrollHeight;
         });
-        win.scrollTop = win.scrollHeight;
     }
 
-    // --- ADMIN LOGIC ---
-    function createNewUser() {
-        const u = document.getElementById('new-u').value;
-        const p = document.getElementById('new-p').value;
-        const r = document.getElementById('new-r').value;
-        if (u && p) {
-            users.push({ username: u, password: p, role: r });
-            localStorage.setItem('sys_users', JSON.stringify(users));
-            refreshAdminList();
-            refreshChatRecipients();
-            document.getElementById('new-u').value = "";
-            document.getElementById('new-p').value = "";
-        }
+    // Admin Functions
+    function addUser() {
+        const u = document.getElementById('nu').value, p = document.getElementById('np').value, r = document.getElementById('nr').value;
+        if(u && p) db.ref('users').push({ username: u, password: p, role: r });
     }
 
-    function removeUser(idx) {
-        if (users[idx].username === currentUser.username) return alert("Cannot delete self");
-        users.splice(idx, 1);
-        localStorage.setItem('sys_users', JSON.stringify(users));
-        refreshAdminList();
+    function loadUsers() {
+        db.ref('users').on('value', (snap) => {
+            const list = document.getElementById('u-list');
+            list.innerHTML = "";
+            snap.forEach(u => {
+                list.innerHTML += `<div style="background:#eee; padding:5px; margin-bottom:5px; border-radius:5px">${u.val().username} (${u.val().role})</div>`;
+            });
+        });
     }
 
-    function refreshAdminList() {
-        const container = document.getElementById('user-list-container');
-        container.innerHTML = users.map((u, i) => `
-            <div class="user-card">
-                <span><strong>${u.username}</strong> <span class="role-badge" style="background:#64748b">${u.role}</span></span>
-                <button class="btn-danger btn-small" onclick="removeUser(${i})">Delete</button>
-            </div>
-        `).join('');
+    function loadRecipients() {
+        db.ref('users').on('value', (snap) => {
+            const sel = document.getElementById('target');
+            sel.innerHTML = '<option value="All">Everyone (Public)</option>';
+            snap.forEach(u => {
+                if(u.val().username !== currentUser.username) {
+                    sel.innerHTML += `<option value="${u.val().username}">Private: ${u.val().username}</option>`;
+                }
+            });
+        });
     }
 </script>
-
 </body>
 </html>
