@@ -2,206 +2,50 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>High-Speed Cloud Portal</title>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-
-    <style>
-        :root { --admin: #1e293b; --primary: #2563eb; --bg: #f1f5f9; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; margin: 0; user-select: none; -webkit-user-select: none; }
-        .card { width: 100%; max-width: 800px; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); box-sizing: border-box; }
-        .hidden { display: none !important; }
-        
-        .input-group { position: relative; margin: 10px 0; }
-        input { width: 100%; padding: 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 16px; outline: none; box-sizing: border-box; user-select: text; -webkit-user-select: text; }
-        
-        .eye-btn { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 20px; cursor: pointer; }
-
-        .btn-login { background: var(--primary); color: white; width: 100%; padding: 14px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 16px; margin-top: 10px; transition: opacity 0.1s; }
-        .btn-login:disabled { opacity: 0.6; cursor: not-allowed; }
-
-        .nav-tabs { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 12px; }
-        .tab-btn { padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; background: #e2e8f0; color: #475569; }
-        .active-tab { background: var(--primary); color: white; }
-
-        #chat-window { height: 350px; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0; }
-        .msg { max-width: 80%; padding: 10px; border-radius: 12px; font-size: 14px; position: relative; }
-        .sent { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 2px; }
-        .recv { align-self: flex-start; background: white; border: 1px solid #ddd; border-bottom-left-radius: 2px; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yug's Private Chat</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="card">
-    <div id="login-screen">
-        <h2 style="text-align:center; margin:0 0 10px 0;">Fast Access</h2>
-        <div class="input-group">
-            <input type="text" id="login-u" placeholder="Username" spellcheck="false">
+    <div id="login-screen" class="container">
+        <h2>Welcome</h2>
+        <input type="text" id="login-username" placeholder="Username">
+        <div class="password-container">
+            <input type="password" id="login-password" placeholder="Password">
+            <button type="button" id="toggle-eye" onclick="toggleView()">👁️</button>
         </div>
-        <div class="input-group">
-            <input type="password" id="login-p" placeholder="Password">
-            <button class="eye-btn" onmousedown="peek(true)" onmouseup="peek(false)" ontouchstart="peek(true)" ontouchend="peek(false)">👁️</button>
-        </div>
-        <button id="auth-btn" class="btn-login" onclick="fastLogin()">Login</button>
+        <button class="main-btn" onclick="handleLogin()">Login</button>
     </div>
 
-    <div id="main-app" class="hidden">
-        <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom:15px;">
-            <h4 id="user-tag" style="margin:0">User</h4>
-            <button onclick="location.reload()" style="color:red; background:none; border:none; font-weight:bold; cursor:pointer;">Logout</button>
+    <div id="chat-screen" class="container" style="display:none;">
+        <div class="header">
+            <h3>Chatting as: <span id="user-tag"></span></h3>
+            <button id="admin-gate" style="display:none;" onclick="openAdmin()">⚙️ Admin</button>
+            <button class="logout-btn" onclick="location.reload()">Exit</button>
         </div>
-
-        <div class="nav-tabs">
-            <button class="tab-btn active-tab" id="t-chat" onclick="tab('chat')">Chat</button>
-            <button class="tab-btn hidden" id="t-admin" onclick="tab('admin')">Admin</button>
-        </div>
-
-        <div id="chat-sect" class="content">
-            <select id="chat-to" style="width:100%; padding:8px; margin-bottom:8px; border-radius:6px; border:1px solid #ccc;"></select>
-            <div id="chat-window"></div>
-            <div style="display:flex; gap:5px; margin-top:8px;">
-                <input type="text" id="msg-input" placeholder="Message..." style="padding:10px;">
-                <button class="btn-login" style="width:80px; margin:0; padding:10px;" onclick="send()">Send</button>
-            </div>
-        </div>
-
-        <div id="admin-sect" class="content hidden">
-            <div id="user-list" style="max-height:150px; overflow-y:auto; margin-bottom:10px; font-size:13px;"></div>
-            <input type="text" id="nu" placeholder="New Username" style="margin-bottom:5px;">
-            <input type="text" id="np" placeholder="Password" style="margin-bottom:5px;">
-            <select id="nr" style="margin-bottom:10px;"><option value="reader">Reader</option><option value="admin">Admin</option></select>
-            <button class="btn-login" onclick="addUser()" style="margin:0;">Create Account</button>
+        <div id="messages-display"></div>
+        <div class="input-row">
+            <input type="text" id="msg-input" placeholder="Write a message...">
+            <button onclick="sendMessage()">Send</button>
         </div>
     </div>
-</div>
 
-<script>
-    // --- 1. CONFIGURATION ---
-    const firebaseConfig = {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_PROJECT.firebaseapp.com",
-        databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-        projectId: "YOUR_PROJECT",
-        storageBucket: "YOUR_PROJECT.appspot.com",
-        messagingSenderId: "YOUR_ID",
-        appId: "YOUR_APP_ID"
-    };
+    <div id="admin-screen" class="container" style="display:none;">
+        <h3>Admin Control</h3>
+        <div class="admin-form">
+            <input type="text" id="new-u" placeholder="New Username">
+            <input type="text" id="new-p" placeholder="New Password">
+            <button onclick="createUser()">Add User</button>
+        </div>
+        <hr>
+        <h4>All Users & Passwords</h4>
+        <div id="user-registry"></div>
+        <button class="close-btn" onclick="closeAdmin()">Back to Chat</button>
+    </div>
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    let currentUser = null;
-
-    function peek(s) { document.getElementById('login-p').type = s ? 'text' : 'password'; }
-
-    // --- 2. FAST AUTHENTICATION (1s Target) ---
-    async function fastLogin() {
-        const u = document.getElementById('login-u').value.trim();
-        const p = document.getElementById('login-p').value.trim();
-        const btn = document.getElementById('auth-btn');
-
-        if (!u || !p) return;
-        btn.disabled = true;
-        btn.innerText = "Connecting...";
-
-        // Faster Query: Search directly for the username node
-        db.ref('users').orderByChild('username').equalTo(u).once('value', (snap) => {
-            const data = snap.val();
-            let matched = null;
-
-            if (data) {
-                for (let key in data) {
-                    if (data[key].password === p) {
-                        matched = data[key];
-                        break;
-                    }
-                }
-            }
-
-            if (matched) {
-                currentUser = matched;
-                launchApp();
-            } else {
-                alert("Auth Failed");
-                btn.disabled = false;
-                btn.innerText = "Login";
-            }
-        });
-    }
-
-    // --- 3. APP INTERFACE ---
-    function launchApp() {
-        document.getElementById('login-screen').classList.add('hidden');
-        document.getElementById('main-app').classList.remove('hidden');
-        document.getElementById('user-tag').innerText = currentUser.username + " (" + currentUser.role + ")";
-
-        if (currentUser.role === 'admin') {
-            document.getElementById('t-admin').classList.remove('hidden');
-            syncAdmin();
-        }
-        syncChat();
-        syncRecipients();
-    }
-
-    function tab(name) {
-        document.querySelectorAll('.content').forEach(c => c.classList.add('hidden'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-tab'));
-        document.getElementById(name + '-sect').classList.remove('hidden');
-        document.getElementById('t-' + name).classList.add('active-tab');
-    }
-
-    // --- 4. CHAT & DATA ---
-    function send() {
-        const inp = document.getElementById('msg-input');
-        const to = document.getElementById('chat-to').value;
-        if (!inp.value.trim()) return;
-        db.ref('chats').push({ from: currentUser.username, to: to, msg: inp.value, ts: Date.now() });
-        inp.value = "";
-    }
-
-    function syncChat() {
-        db.ref('chats').limitToLast(50).on('value', (snap) => {
-            const win = document.getElementById('chat-window');
-            win.innerHTML = "";
-            snap.forEach(child => {
-                const m = child.val();
-                if (m.to === 'All' || m.to === currentUser.username || m.from === currentUser.username) {
-                    const div = document.createElement('div');
-                    div.className = `msg ${m.from === currentUser.username ? 'sent' : 'recv'}`;
-                    div.innerHTML = `<small style="font-size:9px; display:block; opacity:0.8;">${m.from}</small>${m.msg}`;
-                    win.appendChild(div);
-                }
-            });
-            win.scrollTop = win.scrollHeight;
-        });
-    }
-
-    function syncRecipients() {
-        db.ref('users').on('value', snap => {
-            const sel = document.getElementById('chat-to');
-            sel.innerHTML = '<option value="All">Global Chat</option>';
-            snap.forEach(u => {
-                if (u.val().username !== currentUser.username) {
-                    sel.innerHTML += `<option value="${u.val().username}">DM: ${u.val().username}</option>`;
-                }
-            });
-        });
-    }
-
-    function syncAdmin() {
-        db.ref('users').on('value', snap => {
-            const list = document.getElementById('user-list');
-            list.innerHTML = "";
-            snap.forEach(u => {
-                list.innerHTML += `<div style="padding:5px; border-bottom:1px solid #eee;">${u.val().username} [${u.val().role}]</div>`;
-            });
-        });
-    }
-
-    function addUser() {
-        const u = document.getElementById('nu').value, p = document.getElementById('np').value, r = document.getElementById('nr').value;
-        if (u && p) db.ref('users').push({ username: u, password: p, role: r });
-    }
-</script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
