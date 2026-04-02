@@ -1,7 +1,7 @@
 // REPLACE THIS WITH YOUR FIREBASE CONFIG
 const firebaseConfig = {
   apiKey: "AIzaSyCDwmQT8q_gL8TxFW8Atdl9JtRo3ywYj98",
-  databaseURL: "YOUR_DATABASE_URL",
+  databaseURL: "chat-go12.firebaseapp.com",
   projectId: "YOUR_PROJECT_ID",
 };
 
