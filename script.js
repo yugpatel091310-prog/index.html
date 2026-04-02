@@ -2,7 +2,7 @@
 const firebaseConfig = {
   apiKey: "AIzaSyCDwmQT8q_gL8TxFW8Atdl9JtRo3ywYj98",
   databaseURL: "chat-go12.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
+  projectId: "chat-go12",
 };
 
 firebase.initializeApp(firebaseConfig);
