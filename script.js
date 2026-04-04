@@ -10,68 +10,42 @@ const db = firebase.database();
 let currentUser = "";
 let isLoginMode = true;
 
-// Toggle between Login and Sign Up
+// Toggle Login/Signup
 function toggleAuthMode() {
     isLoginMode = !isLoginMode;
-    const title = document.getElementById('auth-title');
-    const subtitle = document.getElementById('auth-subtitle');
-    const btn = document.getElementById('auth-btn');
-    const link = document.getElementById('toggle-link');
-    const text = document.getElementById('toggle-text');
-
-    if (isLoginMode) {
-        title.innerText = "Welcome";
-        subtitle.innerText = "Login to start chatting";
-        btn.innerText = "Login";
-        text.innerText = "Don't have an account?";
-        link.innerText = "Sign Up";
-    } else {
-        title.innerText = "Create Account";
-        subtitle.innerText = "Join the private chat";
-        btn.innerText = "Sign Up";
-        text.innerText = "Already have an account?";
-        link.innerText = "Login";
-    }
+    document.getElementById('auth-title').innerText = isLoginMode ? "Welcome" : "Create Account";
+    document.getElementById('auth-btn').innerText = isLoginMode ? "Login" : "Sign Up";
+    document.getElementById('toggle-link').innerText = isLoginMode ? "Sign Up" : "Login";
 }
 
+function toggleView() {
+    const p = document.getElementById('login-password');
+    p.type = p.type === "password" ? "text" : "password";
+}
+
+// Auth Handling
 function handleAuth() {
     const u = document.getElementById('login-username').value.trim();
     const p = document.getElementById('login-password').value.trim();
-
-    if (!u || !p) {
-        alert("Please fill in all fields");
-        return;
-    }
+    if(!u || !p) return alert("Fill all fields");
 
     if (isLoginMode) {
-        // LOGIN LOGIC
-        if (u === "Yug Patel" && p === "yugpatel1309") {
-            document.getElementById('admin-gate').style.display = "inline-block";
-            loginSuccess("Yug Patel");
-            return;
+        if(u === "Yug Patel" && p === "yugpatel1309") {
+            document.getElementById('admin-gate').style.display = "block";
+            return loginSuccess("Yug Patel");
         }
-
-        db.ref('users/' + u).once('value', (snap) => {
-            const data = snap.val();
-            if (data && data.password === p) {
-                loginSuccess(u);
-            } else {
-                alert("Wrong username or password!");
-            }
+        db.ref('users/' + u).once('value', snap => {
+            const val = snap.val();
+            if(val && val.password === p) loginSuccess(u);
+            else alert("Wrong credentials");
         });
     } else {
-        // SIGN UP LOGIC
-        db.ref('users/' + u).once('value', (snap) => {
-            if (snap.exists()) {
-                alert("Username already taken!");
-            } else {
-                db.ref('users/' + u).set({ password: p }, (err) => {
-                    if (!err) {
-                        alert("Account created! You can now login.");
-                        toggleAuthMode();
-                    }
-                });
-            }
+        db.ref('users/' + u).once('value', snap => {
+            if(snap.exists()) return alert("User exists");
+            db.ref('users/' + u).set({ password: p }).then(() => {
+                alert("Account created! Now login.");
+                toggleAuthMode();
+            });
         });
     }
 }
@@ -84,8 +58,7 @@ function loginSuccess(name) {
     loadMessages();
 }
 
-// --- Chat & Image Functions (Same as previous) ---
-
+// Messages
 function sendMessage() {
     const input = document.getElementById('msg-input');
     if(!input.value.trim()) return;
@@ -96,55 +69,56 @@ function sendMessage() {
 function sendImage(input) {
     if (input.files && input.files[0]) {
         const reader = new FileReader();
-        reader.onload = (e) => {
-            db.ref('messages').push({ sender: currentUser, text: e.target.result, type: 'image' });
-        };
+        reader.onload = e => db.ref('messages').push({ sender: currentUser, text: e.target.result, type: 'image' });
         reader.readAsDataURL(input.files[0]);
     }
 }
 
 function loadMessages() {
-    const display = document.getElementById('messages-display');
-    db.ref('messages').on('child_added', (snap) => {
-        const m = snap.val();
-        const isMine = m.sender === currentUser;
-        const content = m.type === 'image' ? `<img src="${m.text}" />` : `<span>${m.text}</span>`;
-        display.innerHTML += `<div class="msg ${isMine ? 'mine' : 'theirs'}"><b>${m.sender}</b>${content}</div>`;
-        display.scrollTop = display.scrollHeight;
+    const box = document.getElementById('messages-display');
+    db.ref('messages').on('value', snap => {
+        box.innerHTML = "";
+        snap.forEach(child => {
+            const m = child.val();
+            const id = child.key;
+            const isMine = m.sender === currentUser;
+            const isAdmin = currentUser === "Yug Patel";
+            
+            const delBtn = isAdmin ? `<div class="del-msg" onclick="deleteMsg('${id}')">×</div>` : "";
+            const content = m.type === 'image' ? `<img src="${m.text}">` : `<span>${m.text}</span>`;
+            
+            box.innerHTML += `<div class="msg ${isMine?'mine':'theirs'}">${delBtn}<b>${m.sender}</b>${content}</div>`;
+        });
+        box.scrollTop = box.scrollHeight;
     });
 }
 
-// --- Admin Security ---
+function deleteMsg(id) { if(confirm("Delete message?")) db.ref('messages/' + id).remove(); }
 
+// Admin Panel
 function openAdmin() {
-    // Safety check: Even if the button is hacked to show, 
-    // only "Yug Patel" identity can trigger the data pull.
-    if (currentUser !== "Yug Patel") {
-        alert("Unauthorized access!");
-        return;
-    }
-
+    if(currentUser !== "Yug Patel") return;
     document.getElementById('chat-screen').style.display = "none";
-    document.getElementById('admin-screen').style.display = "block";
+    document.getElementById('admin-screen').style.display = "flex";
     
-    db.ref('users').on('value', (snap) => {
-        const users = snap.val();
+    db.ref('users').on('value', snap => {
         const list = document.getElementById('user-registry');
         list.innerHTML = "";
-        for(let id in users) {
-            list.innerHTML += `<div style="padding:8px; border-bottom:1px solid #eee;">
-                User: <b>${id}</b> <br> Pass: <code style="color:red;">${users[id].password}</code>
-            </div>`;
-        }
+        snap.forEach(child => {
+            const uName = child.key;
+            if(uName === "Yug Patel") return;
+            list.innerHTML += `
+                <div class="admin-user-card">
+                    <div><b>${uName}</b><br><input type="text" id="p-${uName}" value="${child.val().password}" style="width:100px; padding:2px; margin:0; font-size:12px;"></div>
+                    <div class="admin-actions">
+                        <button class="save-p" onclick="savePass('${uName}')">Save</button>
+                        <button class="del-u" onclick="deleteUser('${uName}')">Del</button>
+                    </div>
+                </div>`;
+        });
     });
 }
 
-function closeAdmin() {
-    document.getElementById('admin-screen').style.display = "none";
-    document.getElementById('chat-screen').style.display = "flex";
-}
-
-function toggleView() {
-    const p = document.getElementById('login-password');
-    p.type = p.type === "password" ? "text" : "password";
-}
+function savePass(u) { db.ref('users/' + u).update({ password: document.getElementById('p-'+u).value }); alert("Saved"); }
+function deleteUser(u) { if(confirm("Delete user?")) db.ref('users/' + u).remove(); }
+function closeAdmin() { document.getElementById('admin-screen').style.display = "none"; document.getElementById('chat-screen').style.display = "flex"; }
