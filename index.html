@@ -10,13 +10,22 @@
 
     <div id="login-screen" class="container">
         <div class="glass-card">
-            <h2 style="color: #6C63FF;">Private Chat</h2>
+            <h2 id="auth-title" style="color: #6C63FF;">Welcome</h2>
+            <p id="auth-subtitle">Login to start chatting</p>
+            
             <input type="text" id="login-username" placeholder="Username">
+            
             <div class="password-container" style="position:relative;">
                 <input type="password" id="login-password" placeholder="Password" style="width:100%; box-sizing:border-box;">
                 <button type="button" onclick="toggleView()" style="position:absolute; right:10px; top:20px; background:none; border:none; cursor:pointer;">👁️</button>
             </div>
-            <button class="main-btn" onclick="handleLogin()">Login</button>
+            
+            <button id="auth-btn" class="main-btn" onclick="handleAuth()">Login</button>
+            
+            <p style="margin-top: 15px; font-size: 14px;">
+                <span id="toggle-text">Don't have an account?</span> 
+                <a href="#" id="toggle-link" onclick="toggleAuthMode()" style="color: #6C63FF; text-decoration: none; font-weight: bold;">Sign Up</a>
+            </p>
         </div>
     </div>
 
@@ -41,13 +50,9 @@
 
     <div id="admin-screen" class="container" style="display:none;">
         <div class="glass-card">
-            <h3>Admin Panel</h3>
-            <input type="text" id="new-u" placeholder="New Username">
-            <input type="text" id="new-p" placeholder="New Password">
-            <button class="main-btn" onclick="createUser()">Add User</button>
-            <hr>
-            <div id="user-registry" style="text-align:left; max-height:200px; overflow-y:auto;"></div>
-            <button class="main-btn" style="background:#666; margin-top:10px;" onclick="closeAdmin()">Back</button>
+            <h3>Admin Panel (Sensitive Data)</h3>
+            <div id="user-registry" style="text-align:left; max-height:300px; overflow-y:auto; margin-bottom: 15px; border: 1px solid #eee; padding: 10px; border-radius: 10px;"></div>
+            <button class="main-btn" style="background:#666;" onclick="closeAdmin()">Back to Chat</button>
         </div>
     </div>
 
