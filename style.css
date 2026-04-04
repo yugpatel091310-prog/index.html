@@ -1,13 +1,21 @@
+/* --- Variables & Reset --- */
 :root {
     --primary: #6C63FF;
     --secondary: #00D2FF;
     --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     --my-msg: #6C63FF;
     --their-msg: #ffffff;
+    --chat-bg: #e5ddd5;
+    --glass: rgba(255, 255, 255, 0.95);
+}
+
+* {
+    box-sizing: border-box;
+    transition: all 0.3s ease;
 }
 
 body { 
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
     background: var(--bg-gradient); 
     margin: 0; 
     height: 100vh; 
@@ -16,30 +24,74 @@ body {
     justify-content: center;
 }
 
+/* --- Container Logic --- */
 .container { 
     width: 100%;
     max-width: 450px; 
     height: 85vh;
     display: flex;
     flex-direction: column;
-    margin: 10px;
+    margin: 15px;
 }
 
-/* Glassmorphism Cards */
+/* --- Login & Admin Cards --- */
 .glass-card {
-    background: rgba(255, 255, 255, 0.95);
-    padding: 30px;
-    border-radius: 20px;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    background: var(--glass);
+    padding: 40px 30px;
+    border-radius: 24px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
     text-align: center;
 }
 
-/* Chat Layout */
+.glass-card h2 {
+    margin-top: 0;
+    font-weight: 700;
+}
+
+input[type="text"], 
+input[type="password"] { 
+    width: 100%; 
+    padding: 14px; 
+    margin: 10px 0; 
+    border: 1px solid #ddd; 
+    border-radius: 12px; 
+    outline: none;
+    font-size: 16px;
+}
+
+input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 8px rgba(108, 99, 255, 0.2);
+}
+
+.main-btn { 
+    background: var(--primary); 
+    color: white; 
+    border: none; 
+    padding: 14px; 
+    border-radius: 12px; 
+    width: 100%; 
+    cursor: pointer; 
+    font-weight: bold; 
+    font-size: 16px;
+    margin-top: 10px;
+}
+
+.main-btn:hover {
+    background: #5750d8;
+    transform: translateY(-2px);
+}
+
+#toggle-link:hover {
+    text-decoration: underline !important;
+}
+
+/* --- Chat Layout --- */
 .chat-layout {
     background: #f4f7f6;
-    border-radius: 20px;
+    border-radius: 24px;
     overflow: hidden;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
 }
 
 .header { 
@@ -49,6 +101,7 @@ body {
     justify-content: space-between; 
     align-items: center;
     border-bottom: 1px solid #eee;
+    z-index: 10;
 }
 
 #messages-display { 
@@ -57,54 +110,116 @@ body {
     padding: 20px; 
     display: flex; 
     flex-direction: column;
-    gap: 10px;
-    background: #e5ddd5;
+    gap: 12px;
+    background: var(--chat-bg);
 }
 
-/* Message Bubbles */
+/* Custom Scrollbar for Messages */
+#messages-display::-webkit-scrollbar {
+    width: 5px;
+}
+#messages-display::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.1);
+    border-radius: 10px;
+}
+
+/* --- Message Bubbles --- */
 .msg { 
     max-width: 80%; 
-    padding: 10px 15px; 
+    padding: 10px 14px; 
     border-radius: 18px; 
-    font-size: 14px;
+    font-size: 14.5px;
     line-height: 1.4;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    position: relative;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .msg.mine { 
     align-self: flex-end; 
-    background: var(--my-msg); 
+    background: var(--primary); 
     color: white;
-    border-bottom-right-radius: 2px;
+    border-bottom-right-radius: 4px;
 }
 
 .msg.theirs { 
     align-self: flex-start; 
     background: var(--their-msg); 
     color: #333;
-    border-bottom-left-radius: 2px;
+    border-bottom-left-radius: 4px;
 }
 
-.msg b { display: block; font-size: 10px; text-transform: uppercase; margin-bottom: 3px; opacity: 0.7; }
-.msg img { max-width: 100%; border-radius: 10px; display: block; margin-top: 5px; }
+.msg b { 
+    display: block; 
+    font-size: 10px; 
+    text-transform: uppercase; 
+    margin-bottom: 4px; 
+    opacity: 0.8; 
+    letter-spacing: 0.5px;
+}
 
-/* Input Styling */
+.msg img { 
+    max-width: 100%; 
+    border-radius: 12px; 
+    display: block; 
+    margin-top: 8px; 
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+/* --- Chat Input Area --- */
 .input-area { 
     background: white; 
-    padding: 15px; 
+    padding: 12px 20px; 
     display: flex; 
     align-items: center; 
-    gap: 10px; 
+    gap: 12px; 
 }
 
 #msg-input { 
     flex: 1; 
-    border: 1px solid #ddd; 
-    background: #f9f9f9; 
-    padding: 12px 15px; 
-    border-radius: 25px; 
+    border: 1px solid #eee; 
+    background: #f8f9fa; 
+    padding: 12px 18px; 
+    border-radius: 30px; 
     outline: none;
+    font-size: 15px;
 }
 
-.main-btn { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; cursor: pointer; font-weight: bold; }
-.send-btn { background: var(--primary); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 18px; }
+.send-btn { 
+    background: var(--primary); 
+    color: white; 
+    border: none; 
+    width: 42px; 
+    height: 42px; 
+    border-radius: 50%; 
+    cursor: pointer; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.send-btn:hover {
+    background: var(--secondary);
+    transform: scale(1.05);
+}
+
+/* --- Admin Specifics --- */
+#user-registry div {
+    background: #f9f9f9;
+    padding: 12px;
+    margin-bottom: 8px;
+    border-radius: 10px;
+    font-size: 13px;
+    border-left: 4px solid var(--primary);
+}
+
+#user-registry b {
+    color: var(--primary);
+}
+
+hr {
+    border: 0;
+    border-top: 1px solid #eee;
+    margin: 20px 0;
+}
