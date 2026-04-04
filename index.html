@@ -10,49 +10,52 @@
 
     <div id="login-screen" class="container">
         <div class="glass-card">
-            <h2 id="auth-title" style="color: #6C63FF;">Welcome</h2>
-            <p id="auth-subtitle">Login to start chatting</p>
+            <h2 id="auth-title" style="color: #6C63FF; margin-bottom: 5px;">Welcome</h2>
+            <p id="auth-subtitle" style="margin-bottom: 20px; color: #666;">Login to start chatting</p>
             
             <input type="text" id="login-username" placeholder="Username">
             
             <div class="password-container" style="position:relative;">
-                <input type="password" id="login-password" placeholder="Password" style="width:100%; box-sizing:border-box;">
-                <button type="button" onclick="toggleView()" style="position:absolute; right:10px; top:20px; background:none; border:none; cursor:pointer;">👁️</button>
+                <input type="password" id="login-password" placeholder="Password">
+                <button type="button" onclick="toggleView()" id="eye-btn">👁️</button>
             </div>
             
             <button id="auth-btn" class="main-btn" onclick="handleAuth()">Login</button>
             
-            <p style="margin-top: 15px; font-size: 14px;">
+            <p style="margin-top: 20px; font-size: 14px; color: #444;">
                 <span id="toggle-text">Don't have an account?</span> 
-                <a href="#" id="toggle-link" onclick="toggleAuthMode()" style="color: #6C63FF; text-decoration: none; font-weight: bold;">Sign Up</a>
+                <a href="#" id="toggle-link" onclick="toggleAuthMode()">Sign Up</a>
             </p>
         </div>
     </div>
 
     <div id="chat-screen" class="container chat-layout" style="display:none;">
         <div class="header">
-            <h3 style="margin:0; font-size:16px;">👤 <span id="user-tag"></span></h3>
-            <div>
-                <button id="admin-gate" style="display:none; border:none; background:none; cursor:pointer; font-size:18px;" onclick="openAdmin()">⚙️</button>
-                <button onclick="location.reload()" style="border:none; color:red; background:none; cursor:pointer; font-weight:bold;">Exit</button>
+            <div class="user-meta">
+                <div class="online-dot"></div>
+                <h3 style="margin:0; font-size:16px;"><span id="user-tag"></span></h3>
+            </div>
+            <div class="header-btns">
+                <button id="admin-gate" style="display:none;" onclick="openAdmin()">⚙️</button>
+                <button class="exit-btn" onclick="location.reload()">Exit</button>
             </div>
         </div>
         
         <div id="messages-display"></div>
 
         <div class="input-area">
-            <label for="img-input" style="cursor:pointer; font-size:20px;">🖼️</label>
+            <label for="img-input" class="icon-btn">📷</label>
             <input type="file" id="img-input" accept="image/*" style="display:none;" onchange="sendImage(this)">
-            <input type="text" id="msg-input" placeholder="Message..." onkeypress="if(event.key === 'Enter') sendMessage()">
+            <input type="text" id="msg-input" placeholder="Type a message..." onkeypress="if(event.key === 'Enter') sendMessage()">
             <button class="send-btn" onclick="sendMessage()">➤</button>
         </div>
     </div>
 
     <div id="admin-screen" class="container" style="display:none;">
-        <div class="glass-card">
-            <h3>Admin Panel (Sensitive Data)</h3>
-            <div id="user-registry" style="text-align:left; max-height:300px; overflow-y:auto; margin-bottom: 15px; border: 1px solid #eee; padding: 10px; border-radius: 10px;"></div>
-            <button class="main-btn" style="background:#666;" onclick="closeAdmin()">Back to Chat</button>
+        <div class="glass-card" style="height: 100%; overflow: hidden; display: flex; flex-direction: column;">
+            <h3 style="color:var(--primary); margin-top:0;">Admin Control</h3>
+            <div id="user-registry"></div>
+            <button class="main-btn" style="background:#666; margin-top:15px;" onclick="closeAdmin()">Back to Chat</button>
         </div>
     </div>
 
