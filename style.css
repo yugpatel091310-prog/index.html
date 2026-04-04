@@ -1,18 +1,110 @@
-body { font-family: sans-serif; background: #f0f2f5; margin: 0; padding: 10px; }
-.container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+:root {
+    --primary: #6C63FF;
+    --secondary: #00D2FF;
+    --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --my-msg: #6C63FF;
+    --their-msg: #ffffff;
+}
 
-/* Password Eye Toggle */
-.password-container { position: relative; display: flex; align-items: center; }
-#toggle-eye { position: absolute; right: 10px; background: none; border: none; cursor: pointer; }
+body { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    background: var(--bg-gradient); 
+    margin: 0; 
+    height: 100vh; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
-input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-button { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; }
-.main-btn { width: 100%; background: #007bff; color: white; font-weight: bold; }
+.container { 
+    width: 100%;
+    max-width: 450px; 
+    height: 85vh;
+    display: flex;
+    flex-direction: column;
+    margin: 10px;
+}
 
-/* Chat Box */
-#messages-display { height: 400px; overflow-y: auto; border: 1px solid #eee; padding: 10px; display: flex; flex-direction: column; }
-.msg { margin-bottom: 10px; padding: 8px; border-radius: 8px; background: #e9ecef; width: fit-content; }
-.input-row { display: flex; gap: 5px; margin-top: 10px; }
+/* Glassmorphism Cards */
+.glass-card {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    text-align: center;
+}
 
-.header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-#user-registry p { background: #f8f9fa; padding: 5px; border-bottom: 1px solid #ddd; font-size: 14px; }
+/* Chat Layout */
+.chat-layout {
+    background: #f4f7f6;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+}
+
+.header { 
+    background: white; 
+    padding: 15px 20px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    border-bottom: 1px solid #eee;
+}
+
+#messages-display { 
+    flex: 1; 
+    overflow-y: auto; 
+    padding: 20px; 
+    display: flex; 
+    flex-direction: column;
+    gap: 10px;
+    background: #e5ddd5;
+}
+
+/* Message Bubbles */
+.msg { 
+    max-width: 80%; 
+    padding: 10px 15px; 
+    border-radius: 18px; 
+    font-size: 14px;
+    line-height: 1.4;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.msg.mine { 
+    align-self: flex-end; 
+    background: var(--my-msg); 
+    color: white;
+    border-bottom-right-radius: 2px;
+}
+
+.msg.theirs { 
+    align-self: flex-start; 
+    background: var(--their-msg); 
+    color: #333;
+    border-bottom-left-radius: 2px;
+}
+
+.msg b { display: block; font-size: 10px; text-transform: uppercase; margin-bottom: 3px; opacity: 0.7; }
+.msg img { max-width: 100%; border-radius: 10px; display: block; margin-top: 5px; }
+
+/* Input Styling */
+.input-area { 
+    background: white; 
+    padding: 15px; 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+}
+
+#msg-input { 
+    flex: 1; 
+    border: 1px solid #ddd; 
+    background: #f9f9f9; 
+    padding: 12px 15px; 
+    border-radius: 25px; 
+    outline: none;
+}
+
+.main-btn { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; cursor: pointer; font-weight: bold; }
+.send-btn { background: var(--primary); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 18px; }
