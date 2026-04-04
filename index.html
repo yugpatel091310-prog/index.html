@@ -9,39 +9,46 @@
 <body>
 
     <div id="login-screen" class="container">
-        <h2>Welcome</h2>
-        <input type="text" id="login-username" placeholder="Username">
-        <div class="password-container">
-            <input type="password" id="login-password" placeholder="Password">
-            <button type="button" id="toggle-eye" onclick="toggleView()">👁️</button>
+        <div class="glass-card">
+            <h2 style="color: #6C63FF;">Private Chat</h2>
+            <input type="text" id="login-username" placeholder="Username">
+            <div class="password-container" style="position:relative;">
+                <input type="password" id="login-password" placeholder="Password" style="width:100%; box-sizing:border-box;">
+                <button type="button" onclick="toggleView()" style="position:absolute; right:10px; top:20px; background:none; border:none; cursor:pointer;">👁️</button>
+            </div>
+            <button class="main-btn" onclick="handleLogin()">Login</button>
         </div>
-        <button class="main-btn" onclick="handleLogin()">Login</button>
     </div>
 
-    <div id="chat-screen" class="container" style="display:none;">
+    <div id="chat-screen" class="container chat-layout" style="display:none;">
         <div class="header">
-            <h3>Chatting as: <span id="user-tag"></span></h3>
-            <button id="admin-gate" style="display:none;" onclick="openAdmin()">⚙️ Admin</button>
-            <button class="logout-btn" onclick="location.reload()">Exit</button>
+            <h3 style="margin:0; font-size:16px;">👤 <span id="user-tag"></span></h3>
+            <div>
+                <button id="admin-gate" style="display:none; border:none; background:none; cursor:pointer; font-size:18px;" onclick="openAdmin()">⚙️</button>
+                <button onclick="location.reload()" style="border:none; color:red; background:none; cursor:pointer; font-weight:bold;">Exit</button>
+            </div>
         </div>
+        
         <div id="messages-display"></div>
-        <div class="input-row">
-            <input type="text" id="msg-input" placeholder="Write a message...">
-            <button onclick="sendMessage()">Send</button>
+
+        <div class="input-area">
+            <label for="img-input" style="cursor:pointer; font-size:20px;">🖼️</label>
+            <input type="file" id="img-input" accept="image/*" style="display:none;" onchange="sendImage(this)">
+            <input type="text" id="msg-input" placeholder="Message..." onkeypress="if(event.key === 'Enter') sendMessage()">
+            <button class="send-btn" onclick="sendMessage()">➤</button>
         </div>
     </div>
 
     <div id="admin-screen" class="container" style="display:none;">
-        <h3>Admin Control</h3>
-        <div class="admin-form">
+        <div class="glass-card">
+            <h3>Admin Panel</h3>
             <input type="text" id="new-u" placeholder="New Username">
             <input type="text" id="new-p" placeholder="New Password">
-            <button onclick="createUser()">Add User</button>
+            <button class="main-btn" onclick="createUser()">Add User</button>
+            <hr>
+            <div id="user-registry" style="text-align:left; max-height:200px; overflow-y:auto;"></div>
+            <button class="main-btn" style="background:#666; margin-top:10px;" onclick="closeAdmin()">Back</button>
         </div>
-        <hr>
-        <h4>All Users & Passwords</h4>
-        <div id="user-registry"></div>
-        <button class="close-btn" onclick="closeAdmin()">Back to Chat</button>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
