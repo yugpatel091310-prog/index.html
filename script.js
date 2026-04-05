@@ -9,21 +9,16 @@ const db = firebase.database();
 
 let currentUser = "";
 let isLoginMode = true;
+const VAULT_KEY = "Secret123"; // UNIQUE PASSWORD FOR FILES
 
-// Toggle Login/Signup
+// Auth & Login
 function toggleAuthMode() {
     isLoginMode = !isLoginMode;
-    document.getElementById('auth-title').innerText = isLoginMode ? "Welcome" : "Create Account";
+    document.getElementById('auth-title').innerText = isLoginMode ? "Midnight Chat" : "Create Account";
     document.getElementById('auth-btn').innerText = isLoginMode ? "Login" : "Sign Up";
     document.getElementById('toggle-link').innerText = isLoginMode ? "Sign Up" : "Login";
 }
 
-function toggleView() {
-    const p = document.getElementById('login-password');
-    p.type = p.type === "password" ? "text" : "password";
-}
-
-// Auth Handling
 function handleAuth() {
     const u = document.getElementById('login-username').value.trim();
     const p = document.getElementById('login-password').value.trim();
@@ -37,16 +32,10 @@ function handleAuth() {
         db.ref('users/' + u).once('value', snap => {
             const val = snap.val();
             if(val && val.password === p) loginSuccess(u);
-            else alert("Wrong credentials");
+            else alert("Error");
         });
     } else {
-        db.ref('users/' + u).once('value', snap => {
-            if(snap.exists()) return alert("User exists");
-            db.ref('users/' + u).set({ password: p }).then(() => {
-                alert("Account created! Now login.");
-                toggleAuthMode();
-            });
-        });
+        db.ref('users/' + u).set({ password: p }).then(() => toggleAuthMode());
     }
 }
 
@@ -55,23 +44,72 @@ function loginSuccess(name) {
     document.getElementById('login-screen').style.display = "none";
     document.getElementById('chat-screen').style.display = "flex";
     document.getElementById('user-tag').innerText = name;
+    if (name === "Yug Patel") {
+        document.getElementById('admin-file-zone').innerHTML = `
+            <label for="p-up" style="cursor:pointer; font-size:22px; margin-right:5px;">📁</label>
+            <input type="file" id="p-up" style="display:none" onchange="uploadFile(this)">
+        `;
+    }
     loadMessages();
 }
 
-// Messages
+// Vault Access Controls
+function promptVaultAccess() {
+    if (currentUser === "Yug Patel") return openAdmin();
+    document.getElementById('vault-auth-modal').style.display = "flex";
+}
+
+function verifyVaultPass() {
+    if (document.getElementById('vault-pass-input').value === VAULT_KEY) {
+        closeVaultModal();
+        openUserVault();
+    } else alert("Wrong Password");
+}
+
+function openUserVault() {
+    document.getElementById('chat-screen').style.display = "none";
+    document.getElementById('admin-screen').style.display = "flex";
+    document.getElementById('admin-only-section').style.display = "none";
+    document.getElementById('vault-title').innerText = "Shared Vault";
+    loadPrivateVault();
+}
+
+function closeVaultModal() { document.getElementById('vault-auth-modal').style.display = "none"; }
+
+// Admin & Files
+function uploadFile(input) {
+    const file = input.files[0];
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        db.ref('vault').push({ name: file.name, data: e.target.result, type: file.type });
+        alert("Saved!");
+    };
+    reader.readAsDataURL(file);
+}
+
+function loadPrivateVault() {
+    db.ref('vault').on('value', snap => {
+        const display = document.getElementById('vault-display');
+        display.innerHTML = "";
+        snap.forEach(child => {
+            const d = child.val();
+            const isAdmin = currentUser === "Yug Patel";
+            display.innerHTML += `
+                <div class="vault-item">
+                    ${d.type.startsWith('image/') ? `<img src="${d.data}">` : `📄`}
+                    <a href="${d.data}" download="${d.name}" class="file-link">${d.name}</a>
+                    ${isAdmin ? `<button onclick="delFile('${child.key}')" style="color:red; background:none; border:none; cursor:pointer;">Del</button>` : ""}
+                </div>`;
+        });
+    });
+}
+
+// Chat
 function sendMessage() {
     const input = document.getElementById('msg-input');
     if(!input.value.trim()) return;
-    db.ref('messages').push({ sender: currentUser, text: input.value, type: 'text' });
+    db.ref('messages').push({ sender: currentUser, text: input.value });
     input.value = "";
-}
-
-function sendImage(input) {
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = e => db.ref('messages').push({ sender: currentUser, text: e.target.result, type: 'image' });
-        reader.readAsDataURL(input.files[0]);
-    }
 }
 
 function loadMessages() {
@@ -80,45 +118,40 @@ function loadMessages() {
         box.innerHTML = "";
         snap.forEach(child => {
             const m = child.val();
-            const id = child.key;
-            const isMine = m.sender === currentUser;
             const isAdmin = currentUser === "Yug Patel";
-            
-            const delBtn = isAdmin ? `<div class="del-msg" onclick="deleteMsg('${id}')">×</div>` : "";
-            const content = m.type === 'image' ? `<img src="${m.text}">` : `<span>${m.text}</span>`;
-            
-            box.innerHTML += `<div class="msg ${isMine?'mine':'theirs'}">${delBtn}<b>${m.sender}</b>${content}</div>`;
+            const isMine = m.sender === currentUser;
+            box.innerHTML += `<div class="msg ${isMine?'mine':'theirs'}">
+                ${isAdmin ? `<div class="del-msg" onclick="delMsg('${child.key}')">×</div>` : ""}
+                <b>${m.sender}</b><span>${m.text}</span></div>`;
         });
         box.scrollTop = box.scrollHeight;
     });
 }
 
-function deleteMsg(id) { if(confirm("Delete message?")) db.ref('messages/' + id).remove(); }
-
-// Admin Panel
+// Admin Panel Toggle
 function openAdmin() {
-    if(currentUser !== "Yug Patel") return;
     document.getElementById('chat-screen').style.display = "none";
     document.getElementById('admin-screen').style.display = "flex";
-    
-    db.ref('users').on('value', snap => {
-        const list = document.getElementById('user-registry');
-        list.innerHTML = "";
-        snap.forEach(child => {
-            const uName = child.key;
-            if(uName === "Yug Patel") return;
-            list.innerHTML += `
-                <div class="admin-user-card">
-                    <div><b>${uName}</b><br><input type="text" id="p-${uName}" value="${child.val().password}" style="width:100px; padding:2px; margin:0; font-size:12px;"></div>
-                    <div class="admin-actions">
-                        <button class="save-p" onclick="savePass('${uName}')">Save</button>
-                        <button class="del-u" onclick="deleteUser('${uName}')">Del</button>
-                    </div>
-                </div>`;
-        });
-    });
+    document.getElementById('admin-only-section').style.display = "block";
+    loadPrivateVault();
+    loadUsers();
 }
 
-function savePass(u) { db.ref('users/' + u).update({ password: document.getElementById('p-'+u).value }); alert("Saved"); }
-function deleteUser(u) { if(confirm("Delete user?")) db.ref('users/' + u).remove(); }
-function closeAdmin() { document.getElementById('admin-screen').style.display = "none"; document.getElementById('chat-screen').style.display = "flex"; }
+function closeAdmin() { 
+    document.getElementById('admin-screen').style.display = "none"; 
+    document.getElementById('chat-screen').style.display = "flex"; 
+}
+
+// System Helpers
+function delMsg(id) { db.ref('messages/' + id).remove(); }
+function delFile(id) { db.ref('vault/' + id).remove(); }
+function toggleView() { const p = document.getElementById('login-password'); p.type = p.type === "password" ? "text" : "password"; }
+function loadUsers() {
+    db.ref('users').on('value', snap => {
+        const reg = document.getElementById('user-registry');
+        reg.innerHTML = "";
+        snap.forEach(c => {
+            if(c.key !== "Yug Patel") reg.innerHTML += `<div class="admin-user-card">${c.key} | ${c.val().password}</div>`;
+        });
+    });
+              }
