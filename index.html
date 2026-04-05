@@ -2,28 +2,24 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yug's Private Chat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Midnight Vault</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div id="login-screen" class="container">
         <div class="glass-card">
-            <h2 id="auth-title" style="color: #6C63FF; margin-bottom: 5px;">Welcome</h2>
-            <p id="auth-subtitle" style="margin-bottom: 20px; color: #666;">Login to start chatting</p>
-            
+            <h2 id="auth-title">Midnight Chat</h2>
+            <p id="auth-subtitle">Secure Login</p>
             <input type="text" id="login-username" placeholder="Username">
-            
-            <div class="password-container" style="position:relative;">
+            <div class="password-container">
                 <input type="password" id="login-password" placeholder="Password">
                 <button type="button" onclick="toggleView()" id="eye-btn">👁️</button>
             </div>
-            
             <button id="auth-btn" class="main-btn" onclick="handleAuth()">Login</button>
-            
-            <p style="margin-top: 20px; font-size: 14px; color: #444;">
-                <span id="toggle-text">Don't have an account?</span> 
+            <p class="toggle-text">
+                <span id="toggle-label">New here?</span> 
                 <a href="#" id="toggle-link" onclick="toggleAuthMode()">Sign Up</a>
             </p>
         </div>
@@ -33,29 +29,44 @@
         <div class="header">
             <div class="user-meta">
                 <div class="online-dot"></div>
-                <h3 style="margin:0; font-size:16px;"><span id="user-tag"></span></h3>
+                <h3><span id="user-tag"></span></h3>
             </div>
             <div class="header-btns">
+                <button class="vault-trigger" onclick="promptVaultAccess()">📁 Files</button>
                 <button id="admin-gate" style="display:none;" onclick="openAdmin()">⚙️</button>
                 <button class="exit-btn" onclick="location.reload()">Exit</button>
             </div>
         </div>
-        
         <div id="messages-display"></div>
-
         <div class="input-area">
-            <label for="img-input" class="icon-btn">📷</label>
-            <input type="file" id="img-input" accept="image/*" style="display:none;" onchange="sendImage(this)">
-            <input type="text" id="msg-input" placeholder="Type a message..." onkeypress="if(event.key === 'Enter') sendMessage()">
+            <div id="admin-file-zone"></div>
+            <input type="text" id="msg-input" placeholder="Message..." onkeypress="if(event.key === 'Enter') sendMessage()">
             <button class="send-btn" onclick="sendMessage()">➤</button>
         </div>
     </div>
 
+    <div id="vault-auth-modal" class="modal-overlay" style="display:none;">
+        <div class="glass-card modal-content">
+            <h3>Locked Vault</h3>
+            <p>Enter the unique file password:</p>
+            <input type="password" id="vault-pass-input" placeholder="Vault Password">
+            <div class="modal-btns">
+                <button class="main-btn" onclick="verifyVaultPass()">Unlock</button>
+                <button class="main-btn cancel" onclick="closeVaultModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <div id="admin-screen" class="container" style="display:none;">
-        <div class="glass-card" style="height: 100%; overflow: hidden; display: flex; flex-direction: column;">
-            <h3 style="color:var(--primary); margin-top:0;">Admin Control</h3>
-            <div id="user-registry"></div>
-            <button class="main-btn" style="background:#666; margin-top:15px;" onclick="closeAdmin()">Back to Chat</button>
+        <div class="glass-card admin-vault-card">
+            <h3 id="vault-title" style="margin-top:0; color:var(--primary);">Private Vault</h3>
+            <div id="vault-display" class="vault-grid"></div>
+            <div id="admin-only-section">
+                <hr>
+                <h4 style="margin: 10px 0;">User Management</h4>
+                <div id="user-registry"></div>
+            </div>
+            <button class="main-btn" style="background:#444; margin-top:15px;" onclick="closeAdmin()">Back to Chat</button>
         </div>
     </div>
 
