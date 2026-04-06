@@ -3,22 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cloud Vault</title>
+    <title>Cloud Vault Pro</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
-
-    <div id="login-screen" class="container">
+<body class="light-theme"> <div id="login-screen" class="container">
         <div class="white-card">
-            <h2 class="ui-title">Welcome</h2>
-            <p class="ui-subtitle">Login to your account</p>
+            <h2 class="ui-title">Cloud Vault</h2>
+            <p class="ui-subtitle">Sign in to your secure space</p>
             <input type="text" id="login-username" placeholder="Username">
             <div class="password-row">
                 <input type="password" id="login-password" placeholder="Password">
                 <button type="button" onclick="toggleView()" id="eye-btn">👁️</button>
             </div>
             <button id="auth-btn" class="btn-blue" onclick="handleAuth()">Login</button>
-            <p class="toggle-text">New here? <a href="#" onclick="toggleAuthMode()">Create Account</a></p>
         </div>
     </div>
 
@@ -34,9 +31,7 @@
                     <button class="btn-red-sm" onclick="logoutUser()">Logout</button>
                 </div>
             </div>
-
             <div id="messages-display"></div>
-
             <div class="input-area">
                 <input type="text" id="msg-input" placeholder="Type a message..." onkeypress="if(event.key === 'Enter') sendMessage()">
                 <button class="send-btn" onclick="sendMessage()">➤</button>
@@ -47,8 +42,8 @@
     <div id="vault-auth-modal" class="modal-overlay" style="display:none;">
         <div class="white-card modal-content">
             <h3>Security Check</h3>
-            <p>Enter password to access settings</p>
-            <input type="password" id="vault-pass-input" placeholder="Password">
+            <p>Enter Vault Code to access settings</p>
+            <input type="password" id="vault-pass-input" placeholder="Vault Password">
             <div class="modal-btns">
                 <button class="btn-blue" onclick="verifyVaultPass()">Access</button>
                 <button class="btn-gray" onclick="closeVaultModal()">Cancel</button>
@@ -65,20 +60,24 @@
 
             <div class="section">
                 <h4 class="section-title">📁 File Vault</h4>
-                <div class="file-labels">
-                    <span>Name</span>
-                    <span>Action</span>
-                </div>
                 <div id="vault-display" class="drive-list"></div>
+            </div>
+
+            <div class="section">
+                <h4 class="section-title">🛠️ My Settings</h4>
+                <button class="btn-gray-sm" onclick="changeMyPassword()">Change My Password</button>
+                <button class="btn-gray-sm" onclick="toggleTheme()">Toggle Dark/Light Mode</button>
             </div>
             
             <div id="admin-only-section" style="display:none;">
                 <div class="divider"></div>
                 <h4 class="section-title">👥 User Management</h4>
+                <button class="btn-blue-sm" onclick="addNewUser()">+ Create New User</button>
+                <button class="btn-blue-sm" onclick="changeVaultPassword()">Change Vault Password</button>
                 <div id="user-registry"></div>
             </div>
             
-            <button class="btn-gray" onclick="closeAdmin()">← Back to Chat</button>
+            <button class="btn-gray" style="margin-top:auto" onclick="closeAdmin()">← Back to Chat</button>
         </div>
     </div>
 
