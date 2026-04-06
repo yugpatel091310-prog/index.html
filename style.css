@@ -1,74 +1,55 @@
 :root {
     --blue: #007bff;
-    --blue-hover: #0056b3;
-    --red: #dc3545;
-    --red-hover: #a71d2a;
-    --bg-light: #f4f7f6;
-    --text-dark: #333;
-    --my-msg: #007bff;
-    --their-msg: #e9ecef;
+    --red: #ff4757;
+    --light-bg: #f8f9fa;
+    --border: #e1e4e8;
+    --text: #2f3542;
 }
 
-* { box-sizing: border-box; transition: all 0.2s ease; }
+* { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; transition: 0.2s; }
+body { background: var(--light-bg); margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; }
+.container { width: 100%; max-width: 450px; height: 90vh; padding: 15px; }
 
-body { 
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-    background-color: var(--bg-light); 
-    margin: 0; height: 100vh; display: flex; align-items: center; justify-content: center;
-    overscroll-behavior-y: contain;
+/* White Card UI */
+.white-card {
+    background: white; border-radius: 20px; padding: 25px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid var(--border);
 }
-
-.container { width: 100%; max-width: 480px; height: 95vh; display: flex; flex-direction: column; padding: 10px; }
-
-/* Light Cards */
-.light-card {
-    background: white; padding: 25px; border-radius: 20px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.05); color: var(--text-dark);
-    border: 1px solid #eee; text-align: center;
-}
-
-/* Password Row */
-.password-row {
-    display: flex; align-items: center; background: #fff; border: 1px solid #ddd;
-    border-radius: 10px; margin: 10px 0; padding-right: 10px;
-}
-.password-row input { border: none !important; margin: 0 !important; }
-
-/* Buttons */
-.btn-blue { background: var(--blue); color: white; border: none; padding: 12px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; }
-.btn-blue:hover { background: var(--blue-hover); }
-
-.btn-red { background: var(--red); color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 13px; }
-.btn-red:hover { background: var(--red-hover); }
-
-.btn-vault { background: var(--blue); color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 13px; margin-right: 5px; }
-
-.btn-gray { background: #6c757d; color: white; border: none; padding: 12px; border-radius: 10px; width: 100%; cursor: pointer; }
+.chat-layout { display: flex; flex-direction: column; height: 100%; padding: 0; overflow: hidden; }
 
 /* Header */
 .header { 
-    background: white; padding: 15px; display: flex; justify-content: space-between; 
-    align-items: center; border-radius: 15px 15px 0 0; border-bottom: 1px solid #eee;
+    padding: 15px 20px; display: flex; justify-content: space-between; 
+    align-items: center; border-bottom: 1px solid var(--border); 
 }
-.status-dot { width: 10px; height: 10px; background: #28a745; border-radius: 50%; margin-right: 8px; }
-.user-meta { display: flex; align-items: center; }
+.header-controls { display: flex; align-items: center; gap: 12px; }
+.btn-icon { background: #f1f2f6; border: none; padding: 8px; border-radius: 10px; cursor: pointer; font-size: 18px; }
+.btn-red-sm { background: var(--red); color: white; border: none; padding: 6px 12px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer; }
 
-/* Chat Area */
-#messages-display { flex: 1; overflow-y: auto; padding: 15px; background: white; display: flex; flex-direction: column; gap: 8px; }
-.msg { max-width: 75%; padding: 10px 15px; border-radius: 15px; font-size: 14px; line-height: 1.4; }
-.msg.mine { align-self: flex-end; background: var(--my-msg); color: white; border-bottom-right-radius: 2px; }
-.msg.theirs { align-self: flex-start; background: var(--their-msg); color: var(--text-dark); border-bottom-left-radius: 2px; }
+/* Password Row */
+.password-row { 
+    display: flex; align-items: center; border: 1px solid var(--border); 
+    border-radius: 10px; margin-bottom: 15px; background: white; 
+}
+.password-row input { border: none !important; margin: 0 !important; flex: 1; }
+#eye-btn { background: none; border: none; padding: 10px; cursor: pointer; }
 
-/* Input Area */
-.input-area { background: white; padding: 15px; display: flex; gap: 10px; border-radius: 0 0 15px 15px; border-top: 1px solid #eee; }
-input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; outline: none; background: #fafafa; }
-.send-btn { background: var(--blue); color: white; border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; }
+/* Chat Bubbles */
+#messages-display { flex: 1; overflow-y: auto; padding: 20px; background: #fff; display: flex; flex-direction: column; gap: 10px; }
+.msg { max-width: 80%; padding: 10px 14px; border-radius: 15px; font-size: 14px; line-height: 1.4; }
+.msg.mine { align-self: flex-end; background: var(--blue); color: white; border-bottom-right-radius: 2px; }
+.msg.theirs { align-self: flex-start; background: #f1f2f6; color: var(--text); border-bottom-left-radius: 2px; }
 
-/* Drive UI */
-.drive-list { display: flex; flex-direction: column; gap: 5px; margin-top: 10px; }
+/* Inputs & Buttons */
+input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px; outline: none; margin-bottom: 10px; color: var(--text); }
+.btn-blue { background: var(--blue); color: white; border: none; width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+.btn-gray { background: #ced4da; color: #495057; border: none; width: 100%; padding: 12px; border-radius: 10px; cursor: pointer; }
+
+/* Drive/Vault Inside Settings */
+.drive-list { margin-top: 10px; max-height: 250px; overflow-y: auto; }
 .drive-item { 
-    display: grid; grid-template-columns: 2fr 1fr 1fr; align-items: center; 
-    padding: 12px; background: #f9f9f9; border-radius: 10px; border: 1px solid #eee;
+    display: flex; justify-content: space-between; align-items: center; 
+    padding: 10px; background: #f8f9fa; border-radius: 8px; margin-bottom: 5px; font-size: 13px;
 }
-.file-name { color: #007bff; text-decoration: none; font-weight: 500; }
-.section-divider { height: 1px; background: #eee; margin: 20px 0; }
+.section-title { margin: 15px 0 5px 0; color: #57606f; font-size: 14px; border-left: 3px solid var(--blue); padding-left: 8px; }
+.divider { height: 1px; background: var(--border); margin: 20px 0; }
