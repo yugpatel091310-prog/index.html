@@ -3,84 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cloud Vault Chat</title>
+    <title>Cloud Vault</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div id="login-screen" class="container">
-        <div class="light-card">
-            <h2 class="brand-title">Cloud Vault</h2>
-            <p class="brand-subtitle">Please sign in to continue</p>
+        <div class="white-card">
+            <h2 class="ui-title">Welcome</h2>
+            <p class="ui-subtitle">Login to your account</p>
             <input type="text" id="login-username" placeholder="Username">
-            
             <div class="password-row">
                 <input type="password" id="login-password" placeholder="Password">
                 <button type="button" onclick="toggleView()" id="eye-btn">👁️</button>
             </div>
-
             <button id="auth-btn" class="btn-blue" onclick="handleAuth()">Login</button>
-            <p class="toggle-text">
-                <span id="toggle-label">New here?</span> 
-                <a href="#" id="toggle-link" onclick="toggleAuthMode()">Create Account</a>
-            </p>
+            <p class="toggle-text">New here? <a href="#" onclick="toggleAuthMode()">Create Account</a></p>
         </div>
     </div>
 
-    <div id="chat-screen" class="container chat-layout" style="display:none;">
-        <div class="header">
-            <div class="user-meta">
-                <div class="status-dot"></div>
-                <h3><span id="user-tag"></span></h3>
+    <div id="chat-screen" class="container" style="display:none;">
+        <div class="white-card chat-layout">
+            <div class="header">
+                <div class="user-info">
+                    <div class="online-indicator"></div>
+                    <span id="user-tag" class="username-display"></span>
+                </div>
+                <div class="header-controls">
+                    <button class="btn-icon" onclick="promptVaultAccess()">⚙️</button>
+                    <button class="btn-red-sm" onclick="logoutUser()">Logout</button>
+                </div>
             </div>
-            
-            <div class="header-btns">
-                <button class="btn-vault" onclick="promptVaultAccess()">📁 Vault</button>
-                <button id="admin-gate" class="btn-settings" style="display:none;" onclick="openAdmin()">⚙️</button>
-                <button class="btn-red" onclick="logoutUser()">Logout</button>
+
+            <div id="messages-display"></div>
+
+            <div class="input-area">
+                <input type="text" id="msg-input" placeholder="Type a message..." onkeypress="if(event.key === 'Enter') sendMessage()">
+                <button class="send-btn" onclick="sendMessage()">➤</button>
             </div>
-        </div>
-
-        <div id="messages-display"></div>
-
-        <div class="input-area">
-            <input type="text" id="msg-input" placeholder="Type a message..." onkeypress="if(event.key === 'Enter') sendMessage()">
-            <button class="send-btn" onclick="sendMessage()">➤</button>
         </div>
     </div>
 
     <div id="vault-auth-modal" class="modal-overlay" style="display:none;">
-        <div class="light-card modal-content">
-            <h3>Locked Vault</h3>
-            <input type="password" id="vault-pass-input" placeholder="Vault Password">
+        <div class="white-card modal-content">
+            <h3>Security Check</h3>
+            <p>Enter password to access settings</p>
+            <input type="password" id="vault-pass-input" placeholder="Password">
             <div class="modal-btns">
-                <button class="btn-blue" onclick="verifyVaultPass()">Unlock</button>
+                <button class="btn-blue" onclick="verifyVaultPass()">Access</button>
                 <button class="btn-gray" onclick="closeVaultModal()">Cancel</button>
             </div>
         </div>
     </div>
 
     <div id="admin-screen" class="container" style="display:none;">
-        <div class="light-card full-panel drive-ui">
-            <div class="drive-header-row">
-                <h3 style="color:#007bff; margin:0;">Cloud Storage</h3>
+        <div class="white-card full-panel">
+            <div class="panel-header">
+                <h3 class="blue-text">Control Panel</h3>
                 <div id="admin-import-zone"></div>
             </div>
-            
-            <div class="file-labels">
-                <span>Name</span>
-                <span class="hide-mobile">Date</span>
-                <span>Action</span>
+
+            <div class="section">
+                <h4 class="section-title">📁 File Vault</h4>
+                <div class="file-labels">
+                    <span>Name</span>
+                    <span>Action</span>
+                </div>
+                <div id="vault-display" class="drive-list"></div>
             </div>
-            <div id="vault-display" class="drive-list"></div>
             
             <div id="admin-only-section" style="display:none;">
-                <div class="section-divider"></div>
-                <h3 style="color:#007bff;">Manage Users</h3>
+                <div class="divider"></div>
+                <h4 class="section-title">👥 User Management</h4>
                 <div id="user-registry"></div>
             </div>
             
-            <button class="btn-gray" style="margin-top:20px;" onclick="closeAdmin()">← Back to Chat</button>
+            <button class="btn-gray" onclick="closeAdmin()">← Back to Chat</button>
         </div>
     </div>
 
