@@ -13,10 +13,12 @@
             <h2 id="auth-title">Midnight Chat</h2>
             <p id="auth-subtitle">Secure Login</p>
             <input type="text" id="login-username" placeholder="Username">
+            
             <div class="password-row">
                 <input type="password" id="login-password" placeholder="Password">
                 <button type="button" onclick="toggleView()" id="eye-btn">👁️</button>
             </div>
+
             <button id="auth-btn" class="main-btn" onclick="handleAuth()">Login</button>
             <p class="toggle-text">
                 <span id="toggle-label">New here?</span> 
@@ -31,14 +33,16 @@
                 <div class="online-dot"></div>
                 <h3><span id="user-tag"></span></h3>
             </div>
+            
             <div class="header-btns">
-                <div id="admin-import-zone" style="display:inline-block;"></div>
-                <button class="vault-trigger" onclick="promptVaultAccess()">📁 Vault</button>
-                <button id="admin-gate" class="admin-btn" style="display:none;" onclick="openAdmin()">⚙️</button>
-                <button class="logout-btn" onclick="logoutUser()">Logout</button>
+                <button class="icon-nav-btn" onclick="promptVaultAccess()" title="Vault">📁</button>
+                <button id="admin-gate" class="icon-nav-btn" style="display:none;" onclick="openAdmin()" title="Settings">⚙️</button>
+                <button class="logout-pill" onclick="logoutUser()">Logout</button>
             </div>
         </div>
+
         <div id="messages-display"></div>
+
         <div class="input-area">
             <input type="text" id="msg-input" placeholder="Type a message..." onkeypress="if(event.key === 'Enter') sendMessage()">
             <button class="send-btn" onclick="sendMessage()">➤</button>
@@ -57,19 +61,27 @@
     </div>
 
     <div id="admin-screen" class="container" style="display:none;">
-        <div class="glass-card full-panel">
+        <div class="glass-card full-panel drive-ui">
             <div id="vault-section">
-                <h3 style="color:var(--primary);">Private Vault</h3>
-                <div id="vault-display" class="vault-grid"></div>
+                <div class="drive-header-row">
+                    <h3 style="color:var(--primary); margin:0;">Drive</h3>
+                    <div id="admin-import-zone"></div>
+                </div>
+                <div class="file-labels">
+                    <span>Name</span>
+                    <span class="hide-mobile">Date</span>
+                    <span>Action</span>
+                </div>
+                <div id="vault-display" class="drive-list"></div>
             </div>
             
             <div id="admin-only-section" style="display:none;">
                 <hr class="dim-hr">
-                <h3 style="color:var(--primary);">User Management</h3>
+                <h3 style="color:var(--primary);">Users</h3>
                 <div id="user-registry"></div>
             </div>
             
-            <button class="main-btn back-btn" onclick="closeAdmin()">Return to Chat</button>
+            <button class="main-btn back-btn" onclick="closeAdmin()">← Back</button>
         </div>
     </div>
 
