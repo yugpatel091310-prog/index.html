@@ -1,11 +1,12 @@
+// Firebase configuration (Keep your existing config)
 const firebaseConfig = {
     apiKey: "AIzaSyCDwmQT8q_gL8TxFW8Atdl9JtRo3ywYj98",
     databaseURL: "https://chat-go12-default-rtdb.firebaseio.com/",
     projectId: "chat-go12",
 };
-
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
+
 let currentUser = "";
 const VAULT_KEY = "Secret123";
 
@@ -22,7 +23,7 @@ function handleAuth() {
     db.ref('users/' + u).once('value', snap => {
         const val = snap.val();
         if(val && val.password === p) loginSuccess(u);
-        else alert("Login Failed. Check username/password.");
+        else alert("Unauthorized");
     });
 }
 
@@ -34,39 +35,25 @@ function loginSuccess(name) {
     document.getElementById('user-tag').innerText = name;
     
     if (name === "Yug Patel") {
-        document.getElementById('admin-gate').style.display = "block";
         document.getElementById('admin-import-zone').innerHTML = `
-            <label for="p-up" style="cursor:pointer; background:#007bff; color:white; padding:6px 15px; border-radius:20px; font-weight:bold; font-size:12px;">+ Import</label>
+            <label for="p-up" style="cursor:pointer; color:var(--blue); font-weight:bold; font-size:13px;">+ Import File</label>
             <input type="file" id="p-up" style="display:none" onchange="uploadFile(this)">
         `;
     }
     loadMessages();
 }
 
-function uploadFile(input) {
-    const file = input.files[0];
-    if(!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        db.ref('vault').push({ 
-            name: file.name, data: e.target.result, type: file.type,
-            date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })
-        });
-        alert("File imported successfully!");
-    };
-    reader.readAsDataURL(file);
-}
-
 function promptVaultAccess() {
+    // If Admin, go straight to panel, otherwise ask for password
     if (currentUser === "Yug Patel") return openAdmin();
     document.getElementById('vault-auth-modal').style.display = "flex";
 }
 
 function verifyVaultPass() {
     if (document.getElementById('vault-pass-input').value === VAULT_KEY) {
-        document.getElementById('vault-auth-modal').style.display = "none";
+        closeVaultModal();
         openUserVault();
-    } else alert("Incorrect Vault Password");
+    } else alert("Invalid Code");
 }
 
 function openUserVault() {
@@ -90,17 +77,12 @@ function loadPrivateVault() {
         display.innerHTML = "";
         snap.forEach(child => {
             const d = child.val();
-            let icon = d.type.startsWith('image/') ? "🖼️" : "📄";
             display.innerHTML += `
                 <div class="drive-item">
-                    <div class="file-info" style="display:flex; align-items:center; gap:10px; overflow:hidden;">
-                        <span>${icon}</span>
-                        <a href="${d.data}" download="${d.name}" class="file-name" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${d.name}</a>
-                    </div>
-                    <div class="file-date hide-mobile" style="color:#888; font-size:12px;">${d.date || 'Today'}</div>
-                    <div style="display:flex; justify-content:flex-end; gap:15px;">
-                        <a href="${d.data}" download="${d.name}" style="text-decoration:none; font-size:18px;">📥</a>
-                        ${currentUser === "Yug Patel" ? `<span onclick="delFile('${child.key}')" style="cursor:pointer; font-size:18px;">🗑️</span>` : ""}
+                    <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:180px;">📄 ${d.name}</span>
+                    <div style="display:flex; gap:10px;">
+                        <a href="${d.data}" download="${d.name}" style="text-decoration:none;">📥</a>
+                        ${currentUser === "Yug Patel" ? `<span onclick="delFile('${child.key}')" style="cursor:pointer; color:red;">🗑️</span>` : ""}
                     </div>
                 </div>`;
         });
@@ -119,12 +101,11 @@ function loadMessages() {
     db.ref('messages').on('value', snap => {
         box.innerHTML = "";
         snap.forEach(child => {
-            const val = child.val();
-            const isMine = val.sender === currentUser;
+            const v = child.val();
+            const isMine = v.sender === currentUser;
             box.innerHTML += `<div class="msg ${isMine?'mine':'theirs'}">
-                <b style="font-size:10px; display:block; margin-bottom:2px; opacity:0.7;">${val.sender}</b>
-                ${val.text}
-                ${currentUser === "Yug Patel" ? `<div onclick="delMsg('${child.key}')" style="cursor:pointer; color:red; font-size:9px; margin-top:5px; text-align:right;">Delete</div>` : ""}
+                <small style="display:block; font-size:9px; opacity:0.6;">${v.sender}</small>
+                ${v.text}
             </div>`;
         });
         box.scrollTop = box.scrollHeight;
@@ -133,36 +114,8 @@ function loadMessages() {
 
 function logoutUser() { localStorage.removeItem("chat_user"); location.reload(); }
 function closeAdmin() { document.getElementById('admin-screen').style.display = "none"; document.getElementById('chat-screen').style.display = "flex"; }
-function closeVaultModal() { document.getElementById('vault-auth-modal').style.display = "none"; }
+function closeVaultModal() { document.getElementById('vault-auth-modal').style.display = "none"; document.getElementById('vault-pass-input').value=""; }
 function toggleView() { 
     const p = document.getElementById('login-password'); 
     p.type = p.type === "password" ? "text" : "password"; 
-}
-
-function loadUsers() {
-    db.ref('users').on('value', snap => {
-        const reg = document.getElementById('user-registry');
-        reg.innerHTML = "";
-        snap.forEach(c => {
-            if(c.key !== "Yug Patel") {
-                reg.innerHTML += `
-                <div style="display:flex; justify-content:space-between; background:#f9f9f9; padding:10px; border-radius:10px; margin-bottom:5px; border:1px solid #eee;">
-                    <span><b>${c.key}</b><br><small style="color:#888;">Pass: ${c.val().password}</small></span>
-                    <button onclick="delUser('${c.key}')" style="background:none; border:none; color:red; cursor:pointer;">Delete User</button>
-                </div>`;
-            }
-        });
-    });
-}
-
-function delMsg(id) { if(confirm("Delete message?")) db.ref('messages/' + id).remove(); }
-function delFile(id) { if(confirm("Delete file?")) db.ref('vault/' + id).remove(); }
-function delUser(u) { if(confirm("Permanently delete this user?")) db.ref('users/' + u).remove(); }
-
-let isLoginMode = true;
-function toggleAuthMode() {
-    isLoginMode = !isLoginMode;
-    document.getElementById('auth-title').innerText = isLoginMode ? "Cloud Vault" : "Join Cloud Vault";
-    document.getElementById('auth-btn').innerText = isLoginMode ? "Login" : "Sign Up";
-    document.getElementById('toggle-link').innerText = isLoginMode ? "Sign Up" : "Login";
 }
