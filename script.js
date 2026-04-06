@@ -8,67 +8,53 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 let currentUser = "";
-let isLoginMode = true;
-const VAULT_KEY = "Secret123"; // UNIQUE PASSWORD FOR FILE VAULT
+const VAULT_KEY = "Secret123";
 
-// Persistence Check: Auto-login if session exists
-window.onload = function() {
-    const savedUser = localStorage.getItem("chat_user");
-    if (savedUser) {
-        loginSuccess(savedUser);
-    }
+// Persistence Check
+window.onload = () => {
+    const saved = localStorage.getItem("chat_user");
+    if (saved) loginSuccess(saved);
 };
-
-function toggleAuthMode() {
-    isLoginMode = !isLoginMode;
-    document.getElementById('auth-title').innerText = isLoginMode ? "Midnight Chat" : "Create Account";
-    document.getElementById('auth-btn').innerText = isLoginMode ? "Login" : "Sign Up";
-    document.getElementById('toggle-link').innerText = isLoginMode ? "Sign Up" : "Login";
-}
 
 function handleAuth() {
     const u = document.getElementById('login-username').value.trim();
     const p = document.getElementById('login-password').value.trim();
-    if(!u || !p) return alert("Fill all fields");
-
-    if (isLoginMode) {
-        if(u === "Yug Patel" && p === "yugpatel1309") {
-            return loginSuccess("Yug Patel");
-        }
-        db.ref('users/' + u).once('value', snap => {
-            const val = snap.val();
-            if(val && val.password === p) loginSuccess(u);
-            else alert("Invalid Credentials");
-        });
-    } else {
-        db.ref('users/' + u).set({ password: p }).then(() => toggleAuthMode());
-    }
+    if(u === "Yug Patel" && p === "yugpatel1309") return loginSuccess("Yug Patel");
+    
+    db.ref('users/' + u).once('value', snap => {
+        const val = snap.val();
+        if(val && val.password === p) loginSuccess(u);
+        else alert("Login Failed");
+    });
 }
 
 function loginSuccess(name) {
     currentUser = name;
-    localStorage.setItem("chat_user", name); // Save Session
-    
+    localStorage.setItem("chat_user", name);
     document.getElementById('login-screen').style.display = "none";
     document.getElementById('chat-screen').style.display = "flex";
     document.getElementById('user-tag').innerText = name;
     
     if (name === "Yug Patel") {
         document.getElementById('admin-gate').style.display = "block";
-        document.getElementById('admin-file-zone').innerHTML = `
-            <label for="p-up" style="cursor:pointer; font-size:22px; margin-right:5px;">📁</label>
+        document.getElementById('admin-import-zone').innerHTML = `
+            <label for="p-up" style="cursor:pointer; font-size:18px;">📥</label>
             <input type="file" id="p-up" style="display:none" onchange="uploadFile(this)">
         `;
     }
     loadMessages();
 }
 
-function logoutUser() {
-    localStorage.removeItem("chat_user");
-    location.reload();
+function uploadFile(input) {
+    const file = input.files[0];
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        db.ref('vault').push({ name: file.name, data: e.target.result, type: file.type });
+        alert("Imported to Vault");
+    };
+    reader.readAsDataURL(file);
 }
 
-// Vault Access
 function promptVaultAccess() {
     if (currentUser === "Yug Patel") return openAdmin();
     document.getElementById('vault-auth-modal').style.display = "flex";
@@ -76,7 +62,7 @@ function promptVaultAccess() {
 
 function verifyVaultPass() {
     if (document.getElementById('vault-pass-input').value === VAULT_KEY) {
-        closeVaultModal();
+        document.getElementById('vault-auth-modal').style.display = "none";
         openUserVault();
     } else alert("Wrong Password");
 }
@@ -85,24 +71,15 @@ function openUserVault() {
     document.getElementById('chat-screen').style.display = "none";
     document.getElementById('admin-screen').style.display = "flex";
     document.getElementById('admin-only-section').style.display = "none";
-    document.getElementById('vault-title').innerText = "Shared Vault";
     loadPrivateVault();
 }
 
-function closeVaultModal() { 
-    document.getElementById('vault-auth-modal').style.display = "none"; 
-    document.getElementById('vault-pass-input').value = "";
-}
-
-// Admin & Files
-function uploadFile(input) {
-    const file = input.files[0];
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        db.ref('vault').push({ name: file.name, data: e.target.result, type: file.type });
-        alert("File Uploaded to Vault!");
-    };
-    reader.readAsDataURL(file);
+function openAdmin() {
+    document.getElementById('chat-screen').style.display = "none";
+    document.getElementById('admin-screen').style.display = "flex";
+    document.getElementById('admin-only-section').style.display = "block";
+    loadPrivateVault();
+    loadUsers();
 }
 
 function loadPrivateVault() {
@@ -111,18 +88,32 @@ function loadPrivateVault() {
         display.innerHTML = "";
         snap.forEach(child => {
             const d = child.val();
-            const isAdmin = currentUser === "Yug Patel";
             display.innerHTML += `
                 <div class="vault-item">
                     ${d.type.startsWith('image/') ? `<img src="${d.data}">` : `📄`}
                     <a href="${d.data}" download="${d.name}" class="file-link">${d.name}</a>
-                    ${isAdmin ? `<button onclick="delFile('${child.key}')" style="color:red; background:none; border:none; cursor:pointer; font-size:10px; margin-top:5px;">Del</button>` : ""}
+                    ${currentUser === "Yug Patel" ? `<br><button onclick="delFile('${child.key}')" style="color:red;background:none;border:none;">Del</button>` : ""}
                 </div>`;
         });
     });
 }
 
-// Messages
+function loadUsers() {
+    db.ref('users').on('value', snap => {
+        const reg = document.getElementById('user-registry');
+        reg.innerHTML = "";
+        snap.forEach(c => {
+            if(c.key !== "Yug Patel") {
+                reg.innerHTML += `
+                <div class="admin-user-card">
+                    <span><b>${c.key}</b><br><small>${c.val().password}</small></span>
+                    <button onclick="delUser('${c.key}')" style="background:red; color:white; border:none; padding:5px; border-radius:5px;">Delete</button>
+                </div>`;
+            }
+        });
+    });
+}
+
 function sendMessage() {
     const input = document.getElementById('msg-input');
     if(!input.value.trim()) return;
@@ -135,41 +126,21 @@ function loadMessages() {
     db.ref('messages').on('value', snap => {
         box.innerHTML = "";
         snap.forEach(child => {
-            const m = child.val();
-            const isAdmin = currentUser === "Yug Patel";
-            const isMine = m.sender === currentUser;
+            const isMine = child.val().sender === currentUser;
             box.innerHTML += `<div class="msg ${isMine?'mine':'theirs'}">
-                ${isAdmin ? `<div class="del-msg" onclick="delMsg('${child.key}')">×</div>` : ""}
-                <b>${m.sender}</b><span>${m.text}</span></div>`;
+                <b>${child.val().sender}</b><br>${child.val().text}
+                ${currentUser === "Yug Patel" ? `<div onclick="delMsg('${child.key}')" style="cursor:pointer; color:red; font-size:10px;">Delete</div>` : ""}
+            </div>`;
         });
         box.scrollTop = box.scrollHeight;
     });
 }
 
-function openAdmin() {
-    document.getElementById('chat-screen').style.display = "none";
-    document.getElementById('admin-screen').style.display = "flex";
-    document.getElementById('admin-only-section').style.display = "block";
-    document.getElementById('vault-title').innerText = "Private Vault";
-    loadPrivateVault();
-    loadUsers();
-}
-
-function closeAdmin() { 
-    document.getElementById('admin-screen').style.display = "none"; 
-    document.getElementById('chat-screen').style.display = "flex"; 
-}
-
-function delMsg(id) { if(confirm("Delete?")) db.ref('messages/' + id).remove(); }
-function delFile(id) { if(confirm("Delete file?")) db.ref('vault/' + id).remove(); }
+function logoutUser() { localStorage.removeItem("chat_user"); location.reload(); }
+function closeAdmin() { document.getElementById('admin-screen').style.display = "none"; document.getElementById('chat-screen').style.display = "flex"; }
+function closeVaultModal() { document.getElementById('vault-auth-modal').style.display = "none"; }
 function toggleView() { const p = document.getElementById('login-password'); p.type = p.type === "password" ? "text" : "password"; }
+function delMsg(id) { db.ref('messages/' + id).remove(); }
+function delFile(id) { db.ref('vault/' + id).remove(); }
+function delUser(u) { if(confirm("Delete user?")) db.ref('users/' + u).remove(); }
 
-function loadUsers() {
-    db.ref('users').on('value', snap => {
-        const reg = document.getElementById('user-registry');
-        reg.innerHTML = "";
-        snap.forEach(c => {
-            if(c.key !== "Yug Patel") reg.innerHTML += `<div class="admin-user-card">${c.key} | ${c.val().password}</div>`;
-        });
-    });
-}
