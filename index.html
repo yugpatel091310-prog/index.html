@@ -6,74 +6,70 @@
     <title>Neural Vault OS</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="dark-mode">
+<body>
 
-    <section id="page-login" class="page active">
+    <div id="page-login" class="page active">
         <div class="auth-center">
-            <h1 class="glow-text">NEURAL_SYS</h1>
+            <h1 class="neon-txt">VAULT_OS</h1>
             <div class="input-group">
                 <input type="text" id="login-u" placeholder="IDENTITY_ID">
                 <input type="password" id="login-p" placeholder="ACCESS_KEY">
-                <button class="btn-hero" onclick="handleAuth()">INITIALIZE</button>
+                <button class="btn-glow" onclick="handleAuth()">INITIALIZE</button>
             </div>
         </div>
-    </section>
+    </div>
 
-    <section id="page-chat" class="page">
-        <header class="app-bar">
-            <span class="brand">COMMS</span>
-            <div class="nav-icons">
-                <button onclick="nav('page-vault-auth')">📁</button>
-                <button onclick="logout()">✕</button>
-            </div>
-        </header>
-        <div id="chat-flow" class="content"></div>
-        <footer class="input-bar">
-            <button class="btn-circle" ontouchstart="startRec()" ontouchend="stopRec()">🎤</button>
+    <div id="page-chat" class="page">
+        <div class="nav-bar">
+            <span class="logo">COMMS</span>
+            <button class="nav-btn" onclick="showPage('page-files')">FILES</button>
+            <button class="nav-btn" onclick="checkAdminAccess()">SYSTEM</button>
+        </div>
+        <div id="chat-box"></div>
+        <div class="input-row">
+            <button class="action-btn" ontouchstart="startRec()" ontouchend="stopRec()">🎤</button>
             <input type="text" id="msg-input" placeholder="Transmission...">
-            <button class="btn-circle neon" onclick="sendMsg()">➤</button>
-        </footer>
-    </section>
-
-    <section id="page-vault-auth" class="page">
-        <div class="full-center">
-            <h3>DECRYPTION_REQUIRED</h3>
-            <input type="password" id="v-key-input" placeholder="ENTER_VAULT_KEY">
-            <button class="btn-hero" onclick="checkVaultKey()">UNLOCK</button>
-            <button class="btn-link" onclick="nav('page-chat')">BACK_TO_COMMS</button>
+            <button class="action-btn cyan" onclick="sendMsg()">➤</button>
         </div>
-    </section>
+    </div>
 
-    <section id="page-files" class="page">
-        <header class="app-bar">
-            <button onclick="nav('page-chat')">←</button>
-            <span class="brand">VAULT_FILES</span>
-            <button id="admin-btn-nav" style="display:none;" onclick="nav('page-admin')">⚙️</button>
-        </header>
-        <div id="file-list" class="content scrollable"></div>
-    </section>
+    <div id="page-files" class="page">
+        <div class="nav-bar">
+            <button class="nav-btn" onclick="showPage('page-chat')">← BACK</button>
+            <span class="logo">VAULT</span>
+            <div id="import-slot"></div>
+        </div>
+        <div class="content-scroll" id="file-list"></div>
+    </div>
 
-    <section id="page-admin" class="page">
-        <header class="app-bar">
-            <button onclick="nav('page-files')">←</button>
-            <span class="brand">ROOT_TOOLS</span>
-        </header>
-        <div class="content scrollable padded">
-            <div class="card">
-                <h4>IMPORT_DATA</h4>
-                <input type="file" onchange="handleUpload(this)">
-            </div>
-            <div class="card">
-                <h4>USER_REGISTRY</h4>
-                <button class="btn-small" onclick="createNewUser()">+ NEW_USER</button>
+    <div id="page-admin" class="page">
+        <div class="nav-bar">
+            <button class="nav-btn" onclick="showPage('page-chat')">← BACK</button>
+            <span class="logo">SYSTEM</span>
+        </div>
+        <div class="content-scroll">
+            <section class="admin-card">
+                <h3>SECURITY_CONFIG</h3>
+                <button class="btn-outline" onclick="updateVaultKey()">CHANGE_VAULT_KEY</button>
+                <button class="btn-outline" onclick="logout()">TERMINATE_SESSION</button>
+            </section>
+            
+            <section class="admin-card">
+                <h3>USER_MANAGEMENT</h3>
+                <button class="btn-glow" onclick="addUser()">+ ADD_NEW_USER</button>
                 <div id="user-list"></div>
-            </div>
-            <div class="card">
-                <h4>SECURITY</h4>
-                <button class="btn-small" onclick="updateVaultKey()">CHANGE_VAULT_KEY</button>
-            </div>
+            </section>
         </div>
-    </section>
+    </div>
+
+    <div id="modal-vault" class="modal">
+        <div class="modal-card">
+            <h3>ENTER_VAULT_KEY</h3>
+            <input type="password" id="vault-key-input">
+            <button class="btn-glow" onclick="verifyVaultAccess()">DECRYPT</button>
+            <button class="btn-link" onclick="closeModal()">CANCEL</button>
+        </div>
+    </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
