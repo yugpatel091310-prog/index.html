@@ -1,4 +1,4 @@
-// --- 1. CONFIGURATION ---
+// --- 1. CONFIGURATION - --
 const firebaseConfig = {
     apiKey: "AIzaSyCDwmQT8q_gL8TxFW8Atdl9JtRo3ywYj98",
     databaseURL: "https://chat-go12-default-rtdb.firebaseio.com/",
