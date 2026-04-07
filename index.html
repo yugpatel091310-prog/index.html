@@ -10,10 +10,19 @@
 
     <div id="page-login" class="page active">
         <div class="auth-center">
-            <h1 class="neon-txt">VAULT_OS</h1>
+            <h1 class="neon-txt" id="auth-title">VAULT_LOGIN</h1>
             <input type="text" id="login-u" placeholder="IDENTITY_ID">
             <input type="password" id="login-p" placeholder="ACCESS_KEY">
-            <button class="btn-glow" onclick="handleAuth()">INITIALIZE</button>
+            
+            <div id="login-actions">
+                <button class="btn-glow" onclick="handleAuth()">INITIALIZE</button>
+                <p style="font-size:12px; margin-top:20px; opacity:0.6;" onclick="toggleAuthMode(true)">New identity? <span style="color:var(--neon)">REGISTER</span></p>
+            </div>
+
+            <div id="signup-actions" style="display:none;">
+                <button class="btn-glow" style="background:#7000ff; color:#fff;" onclick="handleSignup()">CREATE_ID</button>
+                <p style="font-size:12px; margin-top:20px; opacity:0.6;" onclick="toggleAuthMode(false)">Already registered? <span style="color:var(--neon)">LOGIN</span></p>
+            </div>
         </div>
     </div>
 
@@ -25,7 +34,7 @@
         </div>
         <div id="chat-box"></div>
         <div class="input-row">
-            <button class="action-btn" ontouchstart="startRec()" ontouchend="stopRec()">🎤</button>
+            <button id="mic-trigger" class="action-btn" ontouchstart="startRec()" ontouchend="stopRec()" onmousedown="startRec()" onmouseup="stopRec()">🎤</button>
             <input type="text" id="msg-input" placeholder="Transmission...">
             <button class="action-btn cyan" onclick="sendMsg()">➤</button>
         </div>
@@ -53,7 +62,7 @@
             </div>
             <div id="admin-only" style="display:none;">
                 <div class="admin-card">
-                    <h3>USERS</h3>
+                    <h3>USER_REGISTRY</h3>
                     <div id="user-list"></div>
                 </div>
             </div>
