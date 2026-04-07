@@ -3,23 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nebula Vault Pro</title>
+    <title>Cloud Vault: Future</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;500&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 </head>
 <body class="dark-theme">
 
     <div id="login-screen" class="container">
         <div class="glass-card">
-            <lottie-player src="https://assets3.lottiefiles.com/packages/lf20_kw2m8vpk.json" background="transparent" speed="1" style="width: 150px; height: 150px; margin: 0 auto;" loop autoplay></lottie-player>
-            <h2 class="cyber-title">Nebula Vault</h2>
-            <input type="text" id="login-username" placeholder="IDENTIFIER">
+            <h2 class="neon-text">CORE_ACCESS</h2>
+            <p class="subtitle">IDENTITY VERIFICATION REQUIRED</p>
+            <input type="text" id="login-username" placeholder="USERNAME">
             <div class="password-row">
-                <input type="password" id="login-password" placeholder="ACCESS_KEY">
+                <input type="password" id="login-password" placeholder="PASSWORD">
                 <button type="button" onclick="toggleView()" id="eye-btn">👁️</button>
             </div>
-            <button class="btn-cyber" onclick="handleAuth()">INITIALIZE</button>
+            <button class="btn-neon" onclick="handleAuth()">INITIALIZE</button>
         </div>
     </div>
 
@@ -27,17 +26,17 @@
         <div class="glass-card chat-layout">
             <div class="header">
                 <div class="user-info">
-                    <div class="pulse-online"></div>
-                    <span id="user-tag" class="cyber-text"></span>
+                    <div class="pulse-dot"></div>
+                    <span id="user-tag" class="neon-text-sm"></span>
                 </div>
                 <div class="header-controls">
-                    <button class="icon-glow" onclick="promptVaultAccess()">⚙️</button>
-                    <button class="btn-exit" onclick="logoutUser()">EXIT</button>
+                    <button class="btn-icon" onclick="promptVaultAccess()">⚙️</button>
+                    <button class="btn-red-sm" onclick="logoutUser()">EXIT</button>
                 </div>
             </div>
             <div id="messages-display"></div>
             <div class="input-area">
-                <button id="voice-btn" class="icon-glow" onmousedown="startRecording()" onmouseup="stopRecording()">🎤</button>
+                <button id="voice-btn" class="btn-icon-alt" onmousedown="startRecording()" onmouseup="stopRecording()">🎤</button>
                 <input type="text" id="msg-input" placeholder="Type transmission..." onkeypress="if(event.key === 'Enter') sendMessage()">
                 <button class="send-btn" onclick="sendMessage()">➤</button>
             </div>
@@ -47,31 +46,38 @@
     <div id="media-modal" class="modal-overlay" style="display:none;">
         <div class="glass-card full-panel">
             <div class="panel-header">
-                <h3 id="media-title" class="cyber-text">PREVIEW</h3>
-                <button class="btn-exit" onclick="closeMedia()">CLOSE</button>
+                <h3 id="media-title" class="neon-text-sm">PREVIEW</h3>
+                <button class="btn-red-sm" onclick="closeMedia()">CLOSE</button>
             </div>
             <div id="media-content"></div>
+        </div>
+    </div>
+
+    <div id="vault-auth-modal" class="modal-overlay" style="display:none;">
+        <div class="glass-card modal-content">
+            <h3 class="neon-text-sm">ENCRYPTION KEY</h3>
+            <input type="password" id="vault-pass-input" placeholder="VAULT_CODE">
+            <div class="modal-btns">
+                <button class="btn-neon-sm" onclick="verifyVaultPass()">DECRYPT</button>
+                <button class="btn-gray-sm" onclick="closeVaultModal()">CANCEL</button>
+            </div>
         </div>
     </div>
 
     <div id="admin-screen" class="container" style="display:none;">
         <div class="glass-card full-panel">
             <div class="panel-header">
-                <h3 class="cyber-text">SYSTEM_CORE</h3>
+                <h3 class="neon-text">SYSTEM_ROOT</h3>
                 <div id="admin-import-zone"></div>
             </div>
             <div class="scroll-v">
                 <h4 class="section-label">DATA_VAULT</h4>
                 <div id="vault-display"></div>
-                
-                <div id="admin-only-section" style="display:none;">
-                    <div class="divider"></div>
-                    <h4 class="section-label">USER_REGISTRY</h4>
-                    <button class="btn-cyber-sm" onclick="addNewUser()">+ ADD_USER</button>
-                    <div id="user-registry"></div>
-                </div>
+                <div class="divider"></div>
+                <h4 class="section-label">USER_REGISTRY</h4>
+                <div id="user-registry"></div>
             </div>
-            <button class="btn-cyber-sm" style="margin-top:10px" onclick="closeAdmin()">RETURN</button>
+            <button class="btn-gray" onclick="closeAdmin()">BACK_TO_COMMS</button>
         </div>
     </div>
 
