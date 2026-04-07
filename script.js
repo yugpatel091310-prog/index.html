@@ -37,7 +37,7 @@ function handleAuth() {
     if(u === "Yug Patel" && p === "yugpatel1309") return loginOK(u, "admin");
     db.ref('users/'+u).once('value', s => {
         if(s.val() && s.val().password === p) loginOK(u, s.val().role);
-        else alert("DENIED");
+        else alert("ACCESS DENIED");
     });
 }
 
