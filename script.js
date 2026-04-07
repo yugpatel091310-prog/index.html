@@ -8,28 +8,32 @@ const db = firebase.database();
 
 let currentUser = "";
 let userRole = localStorage.getItem("user_role") || "user";
-let globalVaultPass = "";
+let globalVaultPass = "1234";
 
 window.onload = () => {
     const theme = localStorage.getItem("theme") || "light";
     document.body.className = theme + "-theme";
+    const saved = localStorage.getItem("chat_user");
+    if (saved) loginSuccess(saved, userRole);
     
-    const savedUser = localStorage.getItem("chat_user");
-    if (savedUser) loginSuccess(savedUser, userRole);
-
-    db.ref('config/vaultPassword').on('value', snap => { globalVaultPass = snap.val() || "1234"; });
+    db.ref('config/vaultPassword').on('value', snap => { if(snap.val()) globalVaultPass = snap.val(); });
 };
 
 function handleAuth() {
     const u = document.getElementById('login-username').value.trim();
     const p = document.getElementById('login-password').value.trim();
-    
+
+    // --- Hardcoded Admin Bypass ---
+    if(u === "Yug Patel" && p === "yugpatel1309") {
+        return loginSuccess("Yug Patel", "admin");
+    }
+
     db.ref('users/' + u).once('value', snap => {
         const val = snap.val();
         if(val && val.password === p) {
             loginSuccess(u, val.role || "user");
         } else {
-            alert("Incorrect Username or Password");
+            alert("Invalid Login");
         }
     });
 }
@@ -44,121 +48,107 @@ function loginSuccess(name, role) {
     document.getElementById('chat-screen').style.display = "flex";
     document.getElementById('user-tag').innerText = name;
     
-    setupRoleUI();
+    setupUI();
     loadMessages();
 }
 
-function setupRoleUI() {
+function setupUI() {
     const importZone = document.getElementById('admin-import-zone');
     const adminSection = document.getElementById('admin-only-section');
-    
     if (userRole === "admin") {
-        importZone.innerHTML = `<label for="p-up" style="cursor:pointer; color:var(--blue); font-weight:bold; font-size:13px;">+ Import File</label>
-                                <input type="file" id="p-up" style="display:none" onchange="uploadFile(this)">`;
+        importZone.innerHTML = `<label for="f-up" style="cursor:pointer; color:var(--blue); font-weight:bold;">+ Import</label>
+                                <input type="file" id="f-up" style="display:none" onchange="uploadFile(this)">`;
         adminSection.style.display = "block";
     } else {
-        importZone.innerHTML = "";
-        adminSection.style.display = "none";
+        importZone.innerHTML = ""; adminSection.style.display = "none";
     }
 }
 
 function uploadFile(input) {
-    const file = input.files[0];
-    if(!file) return;
+    const file = input.files[0]; if(!file) return;
     const reader = new FileReader();
     reader.onload = (e) => {
-        db.ref('vault').push({ 
-            name: file.name, data: e.target.result, type: file.type,
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        });
-        alert("Success: File uploaded to Vault.");
+        db.ref('vault').push({ name: file.name, data: e.target.result, type: file.type });
+        alert("File Imported!");
     };
     reader.readAsDataURL(file);
 }
 
 function promptVaultAccess() {
-    if(userRole === "admin") return openAdminPanel();
+    if(userRole === "admin") return openPanel();
     document.getElementById('vault-auth-modal').style.display = "flex";
 }
 
 function verifyVaultPass() {
     if (document.getElementById('vault-pass-input').value === globalVaultPass) {
-        closeVaultModal();
-        openAdminPanel();
-    } else { alert("Access Denied: Invalid Code"); }
+        closeVaultModal(); openPanel();
+    } else { alert("Wrong Code"); }
 }
 
-function openAdminPanel() {
+function openPanel() {
     document.getElementById('chat-screen').style.display = "none";
     document.getElementById('admin-screen').style.display = "flex";
-    loadPrivateVault();
+    loadVault();
     if(userRole === "admin") loadUsers();
 }
 
-function loadPrivateVault() {
+function loadVault() {
     db.ref('vault').on('value', snap => {
-        const display = document.getElementById('vault-display');
-        display.innerHTML = snap.exists() ? "" : "<p style='text-align:center; opacity:0.5;'>Vault is empty.</p>";
+        const div = document.getElementById('vault-display');
+        div.innerHTML = "";
         snap.forEach(child => {
             const d = child.val();
-            const isImg = d.type.startsWith('image/');
-            display.innerHTML += `
+            const isImg = d.type && d.type.startsWith('image/');
+            div.innerHTML += `
                 <div class="drive-item">
-                    <div style="display:flex; align-items:center; overflow:hidden;">
-                        ${isImg ? `<img src="${d.data}" class="thumb" onclick="openLightbox('${d.data}')">` : `<span style="font-size:24px;">📄</span>`}
-                        <a href="${d.data}" download="${d.name}" class="file-name" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${d.name}</a>
+                    <div style="display:flex; align-items:center;">
+                        ${isImg ? `<img src="${d.data}" class="thumb" onclick="showLightbox('${d.data}')">` : `<span>📄</span>`}
+                        <a href="${d.data}" download="${d.name}" class="file-name">${d.name}</a>
                     </div>
-                    <div style="display:flex; gap:12px; margin-left:10px;">
-                        <a href="${d.data}" download="${d.name}" style="text-decoration:none;">📥</a>
-                        ${userRole === 'admin' ? `<span onclick="delFile('${child.key}')" style="cursor:pointer; color:var(--red);">🗑️</span>` : ''}
+                    <div>
+                        <a href="${d.data}" download="${d.name}">📥</a>
+                        ${userRole === 'admin' ? `<span onclick="delFile('${child.key}')" style="margin-left:10px; color:red; cursor:pointer;">🗑️</span>` : ''}
                     </div>
                 </div>`;
         });
     });
 }
 
+function sendMessage() {
+    const input = document.getElementById('msg-input');
+    if(!input.value.trim()) return;
+    db.ref('messages').push({ sender: currentUser, text: input.value });
+    input.value = "";
+}
+
 function loadMessages() {
     const box = document.getElementById('messages-display');
-    db.ref('messages').limitToLast(40).on('value', snap => {
+    db.ref('messages').limitToLast(30).on('value', snap => {
         box.innerHTML = "";
         snap.forEach(child => {
             const v = child.val();
-            const isMine = v.sender === currentUser;
-            const time = v.time || "";
-            box.innerHTML += `<div class="msg ${isMine?'mine':'theirs'}">
-                <small>${v.sender}</small>${v.text}
-                <span class="time">${time}</span>
-            </div>`;
+            const mine = v.sender === currentUser;
+            box.innerHTML += `<div class="msg ${mine?'mine':'theirs'}"><small>${v.sender}</small>${v.text}</div>`;
         });
         box.scrollTop = box.scrollHeight;
     });
 }
 
-function sendMessage() {
-    const input = document.getElementById('msg-input');
-    if(!input.value.trim()) return;
-    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    db.ref('messages').push({ sender: currentUser, text: input.value, time: time });
-    input.value = "";
-}
-
-function openLightbox(src) {
-    const lb = document.getElementById('lightbox');
+function showLightbox(src) {
     document.getElementById('lightbox-img').src = src;
-    lb.style.display = 'flex';
+    document.getElementById('lightbox').style.display = 'flex';
 }
 
 function toggleTheme() {
-    const newTheme = document.body.classList.contains('dark-theme') ? 'light' : 'dark';
-    document.body.className = newTheme + '-theme';
-    localStorage.setItem("theme", newTheme);
+    const t = document.body.classList.contains('dark-theme') ? 'light' : 'dark';
+    document.body.className = t + '-theme';
+    localStorage.setItem("theme", t);
 }
 
 function addNewUser() {
-    const u = prompt("New Username:");
-    const p = prompt("New Password:");
+    const u = prompt("User Name:"); const p = prompt("Password:");
     if(u && p) {
-        const r = confirm("Give Admin Privileges?") ? "admin" : "user";
+        const r = confirm("Is Admin?") ? "admin" : "user";
         db.ref('users/' + u).set({ password: p, role: r });
     }
 }
@@ -166,30 +156,21 @@ function addNewUser() {
 function loadUsers() {
     db.ref('users').on('value', snap => {
         const reg = document.getElementById('user-registry');
-        reg.innerHTML = snap.exists() ? "" : "<p>No users registered.</p>";
+        reg.innerHTML = "";
         snap.forEach(c => {
-            reg.innerHTML += `
-                <div class="drive-item">
-                    <span><b>${c.key}</b><br><small style="opacity:0.6;">${c.val().role} | Pass: ${c.val().password}</small></span>
-                    <button onclick="delUser('${c.key}')" style="color:var(--red); background:none; border:none; cursor:pointer;">Remove</button>
-                </div>`;
+            reg.innerHTML += `<div class="drive-item">
+                <span><b>${c.key}</b><br><small>Pass: ${c.val().password}</small></span>
+                <button onclick="delUser('${c.key}')" style="color:red; background:none; border:none;">Delete</button>
+            </div>`;
         });
     });
-}
-
-function changeMyPassword() {
-    const p = prompt("Enter your new password:");
-    if(p) db.ref('users/' + currentUser + '/password').set(p).then(()=>alert("Password Updated."));
-}
-
-function changeVaultPassword() {
-    const p = prompt("Enter new Global Vault Access Code:");
-    if(p) db.ref('config/vaultPassword').set(p).then(()=>alert("Vault Code Updated."));
 }
 
 function logoutUser() { localStorage.clear(); location.reload(); }
 function closeAdmin() { document.getElementById('admin-screen').style.display = "none"; document.getElementById('chat-screen').style.display = "flex"; }
 function closeVaultModal() { document.getElementById('vault-auth-modal').style.display = "none"; document.getElementById('vault-pass-input').value=""; }
 function toggleView() { const p = document.getElementById('login-password'); p.type = p.type === "password" ? "text" : "password"; }
-function delFile(id) { if(confirm("Permanently delete this file?")) db.ref('vault/' + id).remove(); }
-function delUser(u) { if(u !== "Yug Patel" && confirm("Permanently delete user: " + u + "?")) db.ref('users/' + u).remove(); }
+function delFile(id) { if(confirm("Delete?")) db.ref('vault/' + id).remove(); }
+function delUser(u) { if(u !== "Yug Patel" && confirm("Delete?")) db.ref('users/' + u).remove(); }
+function changeMyPassword() { const p = prompt("New Password:"); if(p) db.ref('users/' + currentUser + '/password').set(p); }
+function changeVaultPassword() { const p = prompt("New Vault Code:"); if(p) db.ref('config/vaultPassword').set(p); }
