@@ -1,63 +1,33 @@
+:root { --neon: #00f2ff; --bg: #050507; --surface: #121217; --border: #24242b; }
+
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body, html { margin: 0; padding: 0; background: var(--bg); color: #fff; font-family: 'Segoe UI', Roboto, sans-serif; height: 100%; overflow: hidden; }
 
-body { 
-    margin: 0; background: #000; color: #fff; 
-    font-family: sans-serif; height: 100vh; overflow: hidden; 
-}
+/* Page Management */
+.page { display: none; height: 100vh; width: 100vw; flex-direction: column; position: absolute; top: 0; left: 0; }
+.page.active { display: flex; }
 
-.app-container { 
-    display: flex; flex-direction: column; height: 100vh; width: 100%; 
-}
+/* App Bar */
+.app-bar { height: 60px; background: var(--surface); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; border-bottom: 1px solid var(--border); }
+.brand { color: var(--neon); font-weight: bold; letter-spacing: 1px; }
 
-/* LOGIN */
-.auth-box { padding: 40px 20px; text-align: center; margin-top: 50px; }
-h1 { color: #00f2ff; font-size: 24px; margin-bottom: 30px; }
+/* UI Elements */
+.auth-center, .full-center { margin: auto; width: 85%; text-align: center; }
+.glow-text { color: var(--neon); text-shadow: 0 0 10px var(--neon); margin-bottom: 30px; }
 
-input { 
-    width: 100%; padding: 15px; margin-bottom: 15px; 
-    background: #111; border: 1px solid #333; color: #fff; 
-    border-radius: 8px; font-size: 16px; /* Prevents mobile zoom */
-}
+input { width: 100%; padding: 16px; background: #1a1a21; border: 1px solid var(--border); border-radius: 12px; color: #fff; margin-bottom: 15px; font-size: 16px; }
+.btn-hero { width: 100%; padding: 18px; background: var(--neon); color: #000; border: none; border-radius: 12px; font-weight: bold; font-size: 16px; }
+.btn-circle { width: 50px; height: 50px; border-radius: 50%; border: none; background: #25252b; color: #fff; font-size: 20px; flex-shrink: 0; }
+.btn-circle.neon { background: var(--neon); color: #000; }
 
-.btn-primary { 
-    width: 100%; background: #00f2ff; color: #000; border: none; 
-    padding: 18px; border-radius: 8px; font-weight: bold; font-size: 16px;
-}
+/* Content Areas */
+.content { flex: 1; overflow-y: auto; padding: 15px; }
+.scrollable { -webkit-overflow-scrolling: touch; }
+.card { background: var(--surface); padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid var(--border); }
 
-/* CHAT */
-.main-header { 
-    padding: 15px; background: #111; display: flex; 
-    justify-content: space-between; align-items: center; border-bottom: 1px solid #222;
-}
+/* Messages */
+.msg { max-width: 80%; padding: 12px; border-radius: 15px; margin-bottom: 10px; font-size: 15px; line-height: 1.4; }
+.msg.mine { align-self: flex-end; background: #004d4d; border: 1px solid var(--neon); margin-left: auto; }
+.msg.theirs { align-self: flex-start; background: #23232b; }
 
-#messages-display { 
-    flex: 1; overflow-y: auto; padding: 15px; 
-    display: flex; flex-direction: column; gap: 10px;
-}
-
-.msg { 
-    max-width: 85%; padding: 12px; border-radius: 12px; font-size: 16px; 
-    word-wrap: break-word; line-height: 1.4;
-}
-.msg.mine { align-self: flex-end; background: #00585e; color: #fff; }
-.msg.theirs { align-self: flex-start; background: #222; color: #fff; }
-
-.bottom-bar { 
-    padding: 10px; background: #111; display: flex; gap: 10px; 
-    border-top: 1px solid #222; padding-bottom: 25px; 
-}
-
-.btn-action { 
-    width: 55px; height: 55px; border-radius: 50%; border: none;
-    background: #333; color: #fff; font-size: 20px;
-}
-.btn-send { background: #00f2ff; color: #000; }
-
-/* MODALS */
-.full-modal { 
-    position: fixed; top:0; left:0; width: 100%; height: 100%; 
-    background: #000; z-index: 9999; padding: 20px;
-}
-.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.btn-small { background: #333; color: #fff; border: none; padding: 8px 12px; border-radius: 5px; }
-.btn-red { background: #600; }
+.input-bar { padding: 10px; background: var(--surface); display: flex; gap: 10px; align-items: center; padding-bottom: 30px; }
