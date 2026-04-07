@@ -10,17 +10,17 @@
 
     <div id="page-login" class="page active">
         <div class="auth-center">
-            <h1 class="neon-txt" id="auth-title">VAULT_LOGIN</h1>
-            <input type="text" id="login-u" placeholder="IDENTITY_ID">
-            <input type="password" id="login-p" placeholder="ACCESS_KEY">
+            <h1 class="neon-txt" id="auth-title">VAULT PRO LOGIN</h1>
+            <input type="text" id="login-u" placeholder="USERNAME">
+            <input type="password" id="login-p" placeholder="PASSWORD">
             
             <div id="login-actions">
-                <button class="btn-glow" onclick="handleAuth()">INITIALIZE</button>
-                <p style="font-size:12px; margin-top:20px; opacity:0.6;" onclick="toggleAuthMode(true)">New identity? <span style="color:var(--neon)">REGISTER</span></p>
+                <button class="btn-glow" onclick="handleAuth()">LOGIN</button>
+                <p style="font-size:12px; margin-top:20px; opacity:0.6;" onclick="toggleAuthMode(true)">New here? <span style="color:var(--neon)">SIGN UP</span></p>
             </div>
 
             <div id="signup-actions" style="display:none;">
-                <button class="btn-glow" style="background:#7000ff; color:#fff;" onclick="handleSignup()">CREATE_ID</button>
+                <button class="btn-glow" style="background:#7000ff; color:#fff;" onclick="handleSignup()">GENERATE ID</button>
                 <p style="font-size:12px; margin-top:20px; opacity:0.6;" onclick="toggleAuthMode(false)">Already registered? <span style="color:var(--neon)">LOGIN</span></p>
             </div>
         </div>
@@ -28,7 +28,7 @@
 
     <div id="page-chat" class="page">
         <div class="nav-bar">
-            <span class="logo">COMMS</span>
+            <span class="logo">Chat</span>
             <button class="nav-btn" onclick="showPage('page-files')">FILES</button>
             <button class="nav-btn" onclick="checkAdmin()">SYSTEM</button>
         </div>
@@ -62,7 +62,7 @@
             </div>
             <div id="admin-only" style="display:none;">
                 <div class="admin-card">
-                    <h3>USER_REGISTRY</h3>
+                    <h3>USERS</h3>
                     <div id="user-list"></div>
                 </div>
             </div>
