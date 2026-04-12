@@ -45,7 +45,6 @@ async function smartUpload(el) {
     const status = document.getElementById('status-text');
     status.innerText = "INITIALIZING...";
 
-    // Use Vault 1 for speed; background check for others
     let targetDB = db1, targetST = st1, vNum = 1;
 
     try {
@@ -60,8 +59,15 @@ async function smartUpload(el) {
                 status.style.color = "cyan";
             }, 
             (error) => {
-                alert("UPLOAD FAILED: Check Storage Rules!");
-                status.innerText = "ERROR";
+                console.error("FULL ERROR DETAILS:", error);
+                if (error.code === 'storage/unauthorized') {
+                    alert("RULES ERROR: Go to Firebase Storage > Rules and set 'allow read, write: if true;'");
+                } else if (error.code === 'storage/project-not-found') {
+                    alert("CONFIG ERROR: Your Bucket URL in the code is wrong!");
+                } else {
+                    alert("SYSTEM ERROR: " + error.code);
+                }
+                status.innerText = "FAILED";
             }, 
             async () => {
                 const url = await uploadTask.snapshot.ref.getDownloadURL();
