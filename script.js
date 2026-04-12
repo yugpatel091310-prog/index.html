@@ -1,7 +1,7 @@
 // --- INITIALIZE THREE PROJECTS ---
 // Fill these with the keys from your three Firebase console projects
 const p1 = { apiKey: " AIzaSyB3lbxW4AH3yY40xxgG0DGanY_6oXa13Zg ", databaseURL: "sync-2-b5006.firebaseapp.com", storageBucket: "sync-2-b5006.firebasestorage.app", projectId: "sync-2-b5006" };
-const p2 = { apiKey: "AIzaSyDJ1bOtg-UdYs2R4uSgxomzJhBaIJxY6TA", databaseURL: " ", storageBucket: "yugchatgo.firebasestorage.app", projectId: "yugchatgo" };
+const p2 = { apiKey: "AIzaSyDJ1bOtg-UdYs2R4uSgxomzJhBaIJxY6TA", databaseURL: "https://yugchatgo-default-rtdb.firebaseio.com/ ", storageBucket: "yugchatgo.firebasestorage.app", projectId: "yugchatgo" };
 const p3 = { apiKey: "AIzaSyCDwmQT8q_gL8TxFW8Atdl9JtRo3ywYj98", databaseURL: "https://chat-go12-default-rtdb.firebaseio.com/", storageBucket: "chat-go12.firebasestorage.app", projectId: "chat-go12" };
 
 const app1 = firebase.initializeApp(p1, "app1");
