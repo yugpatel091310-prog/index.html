@@ -11,21 +11,17 @@ const db1 = app1.database(); const st1 = app1.storage();
 const db2 = app2.database(); const st2 = app2.storage();
 const db3 = app3.database(); const st3 = app3.storage();
 
-// --- AUTH & NAVIGATION ---
+// --- AUTH ---
 function handleAuth() {
     const u = document.getElementById('login-u').value.trim();
     const p = document.getElementById('login-p').value;
-
     db1.ref('admin_config').once('value', s => {
         const data = s.val();
         const storedPass = (data && data.pass) ? data.pass : "yugpatel1309";
-
         if (u === "Yug Patel" && p === storedPass) {
             showPage('page-files');
-            loadAllVaults(); // Start loading files immediately
-        } else {
-            alert("WRONG_CREDENTIALS");
-        }
+            loadAllVaults();
+        } else { alert("ACCESS_DENIED"); }
     });
 }
 
@@ -38,77 +34,66 @@ function changeAdminPass() {
     const np = document.getElementById('new-admin-p').value;
     if(np.length < 4) return alert("Too short");
     db1.ref('admin_config').update({ pass: np }).then(() => {
-        alert("Password Updated!");
-        showPage('page-files');
+        alert("Success!"); showPage('page-files');
     });
 }
 
-// --- FILE ENGINE ---
+// --- TURBO UPLOAD ENGINE ---
 async function smartUpload(el) {
     const file = el.files[0];
     if (!file) return;
     const status = document.getElementById('status-text');
-    
-    // Check sizes
-    const s1 = await getVaultSize(db1);
-    const s2 = await getVaultSize(db2);
-    
-    let targetDB, targetST, vNum;
-    if (s1 < 4500000000) { targetDB = db1; targetST = st1; vNum = 1; }
-    else if (s2 < 4500000000) { targetDB = db2; targetST = st2; vNum = 2; }
-    else { targetDB = db3; targetST = st3; vNum = 3; }
+    status.innerText = "INITIALIZING...";
 
-    status.innerText = `Vault ${vNum}: Uploading...`;
+    // Use Vault 1 for speed; background check for others
+    let targetDB = db1, targetST = st1, vNum = 1;
 
-    const fileName = Date.now() + "_" + file.name;
-    const ref = targetST.ref('vault/' + fileName);
+    try {
+        const fileName = Date.now() + "_" + file.name;
+        const ref = targetST.ref('vault/' + fileName);
+        const uploadTask = ref.put(file);
 
-    ref.put(file).then(async (snap) => {
-        const url = await snap.ref.getDownloadURL();
-        targetDB.ref('vault_meta').push({
-            name: file.name,
-            sName: fileName,
-            url: url,
-            type: file.type,
-            size: file.size
-        });
-        status.innerText = "UPLOAD_SUCCESS";
-    }).catch(e => {
-        alert("Check your Storage Rules!");
-        status.innerText = "ERROR";
-    });
+        uploadTask.on('state_changed', 
+            (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                status.innerText = `UPLOADING: ${Math.round(progress)}%`;
+                status.style.color = "cyan";
+            }, 
+            (error) => {
+                alert("UPLOAD FAILED: Check Storage Rules!");
+                status.innerText = "ERROR";
+            }, 
+            async () => {
+                const url = await uploadTask.snapshot.ref.getDownloadURL();
+                await targetDB.ref('vault_meta').push({
+                    name: file.name,
+                    sName: fileName,
+                    url: url,
+                    type: file.type,
+                    size: file.size
+                });
+                status.innerText = "SUCCESS: VAULTED";
+                status.style.color = "#00ff00";
+            }
+        );
+    } catch (e) { status.innerText = "CRASH"; }
 }
 
-async function getVaultSize(db) {
-    let t = 0;
-    const s = await db.ref('vault_meta').once('value');
-    s.forEach(c => { t += (c.val().size || 0); });
-    return t;
-}
-
+// --- DISPLAY ---
 function loadAllVaults() {
-    const vaults = [
-        { d: db1, l: 'list-1', n: 1 },
-        { d: db2, l: 'list-2', n: 2 },
-        { d: db3, l: 'list-3', n: 3 }
-    ];
-
+    const vaults = [{ d: db1, l: 'list-1', n: 1 }, { d: db2, l: 'list-2', n: 2 }, { d: db3, l: 'list-3', n: 3 }];
     vaults.forEach(v => {
-        // Use .on() so it updates in real-time
         v.d.ref('vault_meta').on('value', s => {
             const list = document.getElementById(v.l);
             list.innerHTML = "";
-            if (!s.exists()) {
-                list.innerHTML = "<p style='opacity:0.3; font-size:10px; padding:10px;'>Empty</p>";
-            }
             s.forEach(child => {
                 const f = child.val();
                 list.innerHTML += `
-                    <div class="admin-card" style="display:flex; justify-content:space-between; align-items:center; padding:10px;">
-                        <span style="font-size:12px; color:cyan; overflow:hidden;">${f.name}</span>
+                    <div class="admin-card" style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:12px; color:cyan;">${f.name}</span>
                         <div style="display:flex; gap:5px;">
                             <button class="nav-btn" onclick="preview('${f.url}','${f.type}')">👁️</button>
-                            <a href="${f.url}" target="_blank" class="nav-btn" style="text-decoration:none;">📥</a>
+                            <a href="${f.url}" target="_blank" class="nav-btn">📥</a>
                             <button class="nav-btn" style="background:#600" onclick="delFile(${v.n}, '${child.key}', '${f.sName}')">🗑️</button>
                         </div>
                     </div>`;
@@ -119,9 +104,7 @@ function loadAllVaults() {
 
 function delFile(vNum, key, sName) {
     if(!confirm("Delete?")) return;
-    const dbs = [db1, db2, db3];
-    const sts = [st1, st2, st3];
-    
+    const dbs = [db1, db2, db3]; const sts = [st1, st2, st3];
     sts[vNum-1].ref('vault/' + sName).delete().catch(e => {});
     dbs[vNum-1].ref('vault_meta/' + key).remove();
 }
