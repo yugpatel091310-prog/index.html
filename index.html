@@ -14,69 +14,47 @@
             <input type="text" id="login-u" placeholder="ADMIN_ID">
             <input type="password" id="login-p" placeholder="ACCESS_KEY">
             <button class="btn-glow" onclick="handleAuth()">INITIALIZE</button>
-            <p style="margin-top: 20px; font-size: 10px; opacity: 0.4;">SECURE ENCRYPTION ACTIVE</p>
         </div>
     </div>
 
     <div id="page-files" class="page">
         <div class="nav-bar">
             <span class="logo">15GB_HYPER_VAULT</span>
-            <div style="display: flex; gap: 10px;">
+            <div style="display:flex; gap:8px;">
+                <button class="nav-btn" onclick="loadAllVaults()">🔄</button>
                 <button class="nav-btn" onclick="showPage('page-settings')">⚙️</button>
-                <button class="nav-btn" style="background: var(--danger);" onclick="location.reload()">EXIT</button>
+                <button class="nav-btn" style="background:red;" onclick="location.reload()">EXIT</button>
             </div>
         </div>
         
         <div class="content-scroll">
             <div class="admin-card">
-                <h3 style="margin-bottom: 10px; color: var(--neon);">SYSTEM_UPLOAD</h3>
                 <input type="file" id="up" onchange="smartUpload(this)" style="display:none">
-                <label for="up" class="btn-glow" style="display:block; text-align:center; cursor: pointer;">
-                    + SELECT FILE
-                </label>
-                <div id="status-text" style="font-size:11px; text-align:center; margin-top:10px; color: #888; font-family: monospace;">
-                    SYSTEM_READY
-                </div>
+                <label for="up" class="btn-glow" style="display:block; text-align:center;">+ UPLOAD FILE</label>
+                <p id="status-text" style="font-size:10px; text-align:center; margin-top:8px; color:gray;">READY</p>
             </div>
 
-            <div class="vault-section">
-                <h3 class="logo" style="margin: 20px 0 10px 0;">📁 VAULT_01 (PROJ_A)</h3>
-                <div id="list-1" class="folder-area">
-                    </div>
-            </div>
+            <h3 class="logo">📁 VAULT_01</h3>
+            <div id="list-1"></div>
 
-            <div class="vault-section">
-                <h3 class="logo" style="margin: 20px 0 10px 0;">📁 VAULT_02 (PROJ_B)</h3>
-                <div id="list-2" class="folder-area">
-                    </div>
-            </div>
+            <h3 class="logo" style="margin-top:20px;">📁 VAULT_02</h3>
+            <div id="list-2"></div>
 
-            <div class="vault-section">
-                <h3 class="logo" style="margin: 20px 0 10px 0;">📁 VAULT_03 (PROJ_C)</h3>
-                <div id="list-3" class="folder-area">
-                    </div>
-            </div>
+            <h3 class="logo" style="margin-top:20px;">📁 VAULT_03</h3>
+            <div id="list-3"></div>
         </div>
     </div>
 
     <div id="page-settings" class="page">
         <div class="nav-bar">
             <button class="nav-btn" onclick="showPage('page-files')">← BACK</button>
-            <span class="logo">SYSTEM_CONFIG</span>
+            <span class="logo">SETTINGS</span>
         </div>
         <div class="content-scroll">
             <div class="admin-card">
-                <h3>UPDATE MASTER KEY</h3>
-                <p style="font-size: 11px; margin-bottom: 15px; opacity: 0.6;">Changes your login password for the Admin ID.</p>
-                <input type="password" id="new-admin-p" placeholder="ENTER_NEW_PASSWORD">
-                <button class="btn-glow" onclick="changeAdminPass()">COMMIT_CHANGE</button>
-            </div>
-            
-            <div class="admin-card" style="opacity: 0.5;">
-                <h3>SYSTEM_STATS</h3>
-                <p style="font-size: 12px;">Storage Method: Firebase Cloud Storage</p>
-                <p style="font-size: 12px;">Total Capacity: 15.00 GB</p>
-                <p style="font-size: 12px;">Nodes: 3 Project Clusters</p>
+                <h3>CHANGE MASTER KEY</h3>
+                <input type="password" id="new-admin-p" placeholder="NEW_PASSWORD">
+                <button class="btn-glow" onclick="changeAdminPass()">SAVE_NEW_KEY</button>
             </div>
         </div>
     </div>
@@ -84,7 +62,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
-    
     <script src="script.js"></script>
 </body>
 </html>
