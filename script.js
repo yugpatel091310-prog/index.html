@@ -1,85 +1,106 @@
-// --- CONFIGURATION ---
-const firebaseConfig = {
-    apiKey: "AIzaSyCDwmQT8q_gL8TxFW8Atdl9JtRo3ywYj98",
-    databaseURL: "https://chat-go12-default-rtdb.firebaseio.com/",
-    projectId: "chat-go12",
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+// --- INITIALIZE THREE PROJECTS ---
+// Fill these with the keys from your three Firebase console projects
+const p1 = { apiKey: " AIzaSyB3lbxW4AH3yY40xxgG0DGanY_6oXa13Zg ", databaseURL: "sync-2-b5006.firebaseapp.com", storageBucket: "sync-2-b5006.firebasestorage.app", projectId: "sync-2-b5006" };
+const p2 = { apiKey: "AIzaSyDJ1bOtg-UdYs2R4uSgxomzJhBaIJxY6TA", databaseURL: " yugchatgo.firebaseapp.com", storageBucket: "yugchatgo.firebasestorage.app", projectId: "yugchatgo" };
+const p3 = { apiKey: "AIzaSyCDwmQT8q_gL8TxFW8Atdl9JtRo3ywYj98", databaseURL: "https://chat-go12-default-rtdb.firebaseio.com/", storageBucket: "BUCKET_3", projectId: "chat-go12" };
 
-let currentAdminId = "Yug Patel"; // Your Master ID
+const app1 = firebase.initializeApp(p1, "app1");
+const app2 = firebase.initializeApp(p2, "app2");
+const app3 = firebase.initializeApp(p3, "app3");
 
-// --- AUTHENTICATION ---
-function handleAuth() {
-    const u = document.getElementById('login-u').value.trim();
-    const p = document.getElementById('login-p').value;
+const db1 = app1.database(); const st1 = app1.storage();
+const db2 = app2.database(); const st2 = app2.storage();
+const db3 = app3.database(); const st3 = app3.storage();
 
-    // Check against Firebase stored Admin credentials
-    db.ref('admin_config').once('value', s => {
-        const data = s.val();
-        const storedPass = data ? data.pass : "yugpatel1309"; // Default if not set yet
+// --- SMART UPLOAD LOGIC ---
+async function smartUpload(el) {
+    const file = el.files[0];
+    if (!file) return;
+    const status = document.getElementById('status-text');
+    status.innerText = "Checking availability...";
 
-        if (u === currentAdminId && p === storedPass) {
-            showPage('page-files');
-        } else {
-            alert("ACCESS_DENIED");
-        }
-    });
-}
-
-function showPage(id) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    if(id === 'page-files') loadFiles();
-}
-
-// --- FILE SYSTEM ---
-function loadFiles() {
-    db.ref('vault').on('value', s => {
-        const list = document.getElementById('file-list');
-        list.innerHTML = "";
-        if(!s.exists()) list.innerHTML = "<p style='text-align:center; opacity:0.3; margin-top:30px;'>VAULT_EMPTY</p>";
-        
-        s.forEach(c => {
-            const f = c.val(); const id = c.key;
-            list.innerHTML += `
-                <div class="admin-card">
-                    <p style="color:cyan; margin:0 0 10px 0; font-weight:bold;">${f.name}</p>
-                    <div style="display:flex; gap:5px">
-                        <button class="nav-btn" onclick="preview('${f.data}','${f.type}')" style="flex:1">👁️ VIEW</button>
-                        <a href="${f.data}" download="${f.name}" class="nav-btn" style="flex:1; text-align:center; text-decoration:none">📥 GET</a>
-                        <button class="nav-btn" onclick="delFile('${id}')" style="background:#600">🗑️</button>
-                    </div>
-                </div>`;
-        });
-    });
-}
-
-function upFile(el) {
-    const f = el.files[0]; if(!f) return;
-    const r = new FileReader();
-    r.readAsDataURL(f);
-    r.onload = () => db.ref('vault').push({ name: f.name, data: r.result, type: f.type });
-}
-
-function delFile(id) { if(confirm("Delete file?")) db.ref('vault/'+id).remove(); }
-
-function preview(data, type) {
-    const div = document.createElement('div');
-    div.style = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.98); z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center;";
-    let media = type.includes('image') ? `<img src="${data}" style="max-width:90%; border-radius:10px;">` : `<iframe src="${data}" style="width:90%; height:75%; border:none; background:#fff; border-radius:10px;"></iframe>`;
-    div.innerHTML = `<button onclick="this.parentElement.remove()" style="position:absolute; top:30px; right:20px; padding:12px 25px; background:red; border:none; color:#fff; font-weight:bold; border-radius:8px;">CLOSE</button>${media}`;
-    document.body.appendChild(div);
-}
-
-// --- SETTINGS: CHANGE LOGIN PASSWORD ---
-function changeAdminPass() {
-    const newPass = document.getElementById('new-admin-p').value;
-    if (newPass.length < 4) return alert("Password too short");
+    // Check size of each vault (Approx via DB counter)
+    const s1 = await getVaultSize(db1);
+    const s2 = await getVaultSize(db2);
     
-    db.ref('admin_config').update({ pass: newPass })
-        .then(() => {
-            alert("Login Password Updated!");
-            document.getElementById('new-admin-p').value = "";
+    let targetDB, targetST, vaultNum;
+
+    if (s1 < 4500000000) { targetDB = db1; targetST = st1; vaultNum = 1; }
+    else if (s2 < 4500000000) { targetDB = db2; targetST = st2; vaultNum = 2; }
+    else { targetDB = db3; targetST = st3; vaultNum = 3; }
+
+    status.innerText = `Uploading to Vault ${vaultNum}...`;
+
+    // Upload to Storage
+    const ref = targetST.ref('vault/' + file.name);
+    ref.put(file).then(async (snap) => {
+        const url = await snap.ref.getDownloadURL();
+        // Save metadata to Database
+        targetDB.ref('vault_meta').push({
+            name: file.name,
+            url: url,
+            type: file.type,
+            size: file.size
         });
+        status.innerText = "Upload Complete!";
+    }).catch(err => { alert("Upload failed: " + err.message); status.innerText = "Error."; });
+}
+
+async function getVaultSize(db) {
+    let total = 0;
+    const snap = await db.ref('vault_meta').once('value');
+    snap.forEach(c => { total += (c.val().size || 0); });
+    return total;
+}
+
+// --- DISPLAY LOGIC ---
+function loadAllVaults() {
+    const vaults = [
+        { db: db1, list: 'list-1', num: 1 },
+        { db: db2, list: 'list-2', num: 2 },
+        { db: db3, list: 'list-3', num: 3 }
+    ];
+
+    vaults.forEach(v => {
+        v.db.ref('vault_meta').on('value', s => {
+            const el = document.getElementById(v.list);
+            el.innerHTML = "";
+            s.forEach(c => {
+                const f = c.val();
+                el.innerHTML += `
+                    <div class="admin-card" style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:12px;">${f.name}</span>
+                        <div style="display:flex; gap:5px;">
+                            <button class="nav-btn" onclick="window.open('${f.url}')">👁️</button>
+                            <button class="nav-btn" style="background:#600" onclick="delFile(${v.num}, '${c.key}', '${f.name}')">🗑️</button>
+                        </div>
+                    </div>`;
+            });
+        });
+    });
+}
+
+function delFile(vaultNum, dbKey, fileName) {
+    if (!confirm("Delete?")) return;
+    const dbs = [db1, db2, db3];
+    const sts = [st1, st2, st3];
+    
+    sts[vaultNum-1].ref('vault/' + fileName).delete();
+    dbs[vaultNum-1].ref('vault_meta/' + dbKey).remove();
+}
+
+// --- LOGIN GATE ---
+function handleAuth() {
+    const u = document.getElementById('login-u').value;
+    const p = document.getElementById('login-p').value;
+    
+    // Check against project 1 for admin credentials
+    db1.ref('admin_config').once('value', s => {
+        const stored = s.val() || { pass: "yugpatel1309" };
+        if (u === "Yug Patel" && p === (stored.pass || stored)) {
+            document.getElementById('page-login').classList.remove('active');
+            document.getElementById('page-files').classList.add('active');
+            loadAllVaults();
+        } else { alert("ACCESS_DENIED"); }
+    });
 }
