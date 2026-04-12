@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>15GB Turbo Vault</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triple Vault System</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -20,10 +20,9 @@
     <div id="page-files" class="page">
         <div class="nav-bar">
             <span class="logo">15GB_HYPER_VAULT</span>
-            <div style="display:flex; gap:8px;">
-                <button class="nav-btn" onclick="loadAllVaults()">🔄</button>
+            <div style="display:flex; gap:10px;">
                 <button class="nav-btn" onclick="showPage('page-settings')">⚙️</button>
-                <button class="nav-btn" style="background:var(--danger);" onclick="location.reload()">EXIT</button>
+                <button class="nav-btn" style="background:red" onclick="location.reload()">EXIT</button>
             </div>
         </div>
         
@@ -31,30 +30,18 @@
             <div class="admin-card">
                 <input type="file" id="up" onchange="smartUpload(this)" style="display:none">
                 <label for="up" class="btn-glow" style="display:block; text-align:center;">+ UPLOAD FILE</label>
-                <p id="status-text" style="font-size:11px; text-align:center; margin-top:8px; color:gray; font-family:monospace;">READY</p>
+                <p id="status-text" style="font-size:11px; text-align:center; margin-top:8px; color:gray;">READY</p>
             </div>
 
-            <h3 class="logo">📁 VAULT_01</h3>
-            <div id="list-1"></div>
+            <div class="vault-container">
+                <h3 class="folder-title">📁 FOLDER_01 (Project A)</h3>
+                <div id="list-1" class="file-list"></div>
 
-            <h3 class="logo" style="margin-top:20px;">📁 VAULT_02</h3>
-            <div id="list-2"></div>
+                <h3 class="folder-title">📁 FOLDER_02 (Project B)</h3>
+                <div id="list-2" class="file-list"></div>
 
-            <h3 class="logo" style="margin-top:20px;">📁 VAULT_03</h3>
-            <div id="list-3"></div>
-        </div>
-    </div>
-
-    <div id="page-settings" class="page">
-        <div class="nav-bar">
-            <button class="nav-btn" onclick="showPage('page-files')">← BACK</button>
-            <span class="logo">SETTINGS</span>
-        </div>
-        <div class="content-scroll">
-            <div class="admin-card">
-                <h3>CHANGE MASTER KEY</h3>
-                <input type="password" id="new-admin-p" placeholder="NEW_PASSWORD">
-                <button class="btn-glow" onclick="changeAdminPass()">SAVE_NEW_KEY</button>
+                <h3 class="folder-title">📁 FOLDER_03 (Project C)</h3>
+                <div id="list-3" class="file-list"></div>
             </div>
         </div>
     </div>
