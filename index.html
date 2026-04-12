@@ -3,68 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neural Vault Pro</title>
+    <title>Private Neural Vault</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div id="page-login" class="page active">
         <div class="auth-center">
-            <h1 class="neon-txt" id="auth-title">VAULT PRO LOGIN</h1>
-            <input type="text" id="login-u" placeholder="USERNAME">
-            <input type="password" id="login-p" placeholder="PASSWORD">
-            
-            <div id="login-actions">
-                <button class="btn-glow" onclick="handleAuth()">LOGIN</button>
-                <p style="font-size:12px; margin-top:20px; opacity:0.6;" onclick="toggleAuthMode(true)">New here? <span style="color:var(--neon)">SIGN UP</span></p>
-            </div>
-
-            <div id="signup-actions" style="display:none;">
-                <button class="btn-glow" style="background:#7000ff; color:#fff;" onclick="handleSignup()">GENERATE ID</button>
-                <p style="font-size:12px; margin-top:20px; opacity:0.6;" onclick="toggleAuthMode(false)">Already registered? <span style="color:var(--neon)">LOGIN</span></p>
-            </div>
-        </div>
-    </div>
-
-    <div id="page-chat" class="page">
-        <div class="nav-bar">
-            <span class="logo">Chat</span>
-            <button class="nav-btn" onclick="showPage('page-files')">FILES</button>
-            <button class="nav-btn" onclick="checkAdmin()">SYSTEM</button>
-        </div>
-        <div id="chat-box"></div>
-        <div class="input-row">
-            <button id="mic-trigger" class="action-btn" ontouchstart="startRec()" ontouchend="stopRec()" onmousedown="startRec()" onmouseup="stopRec()">🎤</button>
-            <input type="text" id="msg-input" placeholder="Transmission...">
-            <button class="action-btn cyan" onclick="sendMsg()">➤</button>
+            <h1 class="neon-txt">VAULT_ACCESS</h1>
+            <input type="text" id="login-u" placeholder="ADMIN_ID">
+            <input type="password" id="login-p" placeholder="ACCESS_KEY">
+            <button class="btn-glow" onclick="handleAuth()">INITIALIZE</button>
         </div>
     </div>
 
     <div id="page-files" class="page">
         <div class="nav-bar">
-            <button class="nav-btn" onclick="showPage('page-chat')">← BACK</button>
-            <span class="logo">VAULT</span>
-            <div id="import-slot"></div>
+            <span class="logo">SECURE_FILES</span>
+            <div class="header-btns">
+                <button class="nav-btn" onclick="showPage('page-settings')">SETTINGS</button>
+                <button class="nav-btn red" onclick="location.reload()">EXIT</button>
+            </div>
         </div>
-        <div class="content-scroll" id="file-list"></div>
+        
+        <div class="content-scroll">
+            <div class="admin-card" id="upload-zone">
+                <input type="file" id="up" onchange="upFile(this)" style="display:none">
+                <label for="up" class="btn-glow" style="display:block; text-align:center;">+ UPLOAD NEW FILE</label>
+            </div>
+            <div id="file-list"></div>
+        </div>
     </div>
 
-    <div id="page-admin" class="page">
+    <div id="page-settings" class="page">
         <div class="nav-bar">
-            <button class="nav-btn" onclick="showPage('page-chat')">← BACK</button>
-            <span class="logo">SYSTEM</span>
+            <button class="nav-btn" onclick="showPage('page-files')">← BACK</button>
+            <span class="logo">ADMIN_SETTINGS</span>
         </div>
         <div class="content-scroll">
             <div class="admin-card">
-                <h3>SECURITY</h3>
-                <button class="btn-outline" onclick="changeVaultKey()">CHANGE VAULT KEY</button>
-                <button class="btn-outline" style="color:red" onclick="location.reload()">LOGOUT</button>
-            </div>
-            <div id="admin-only" style="display:none;">
-                <div class="admin-card">
-                    <h3>USERS</h3>
-                    <div id="user-list"></div>
-                </div>
+                <h3>CHANGE LOGIN PASSWORD</h3>
+                <input type="password" id="new-admin-p" placeholder="NEW_PASSWORD">
+                <button class="btn-glow" onclick="changeAdminPass()">UPDATE PASSWORD</button>
             </div>
         </div>
     </div>
