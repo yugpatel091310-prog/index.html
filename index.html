@@ -2,15 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Triple Vault System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hyper Vault Node</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div id="page-login" class="page active">
         <div class="auth-center">
-            <h1 class="neon-txt">MASTER_LOGIN</h1>
+            <h1 class="neon-txt">VAULT_ACCESS</h1>
             <input type="text" id="login-u" placeholder="ADMIN_ID">
             <input type="password" id="login-p" placeholder="ACCESS_KEY">
             <button class="btn-glow" onclick="handleAuth()">INITIALIZE</button>
@@ -19,30 +19,19 @@
 
     <div id="page-files" class="page">
         <div class="nav-bar">
-            <span class="logo">15GB_HYPER_VAULT</span>
-            <div style="display:flex; gap:10px;">
-                <button class="nav-btn" onclick="showPage('page-settings')">⚙️</button>
-                <button class="nav-btn" style="background:red" onclick="location.reload()">EXIT</button>
-            </div>
+            <span class="logo" id="node-id">PROJECT_NODE</span>
+            <button class="nav-btn" style="background:red;" onclick="location.reload()">EXIT</button>
         </div>
         
         <div class="content-scroll">
             <div class="admin-card">
-                <input type="file" id="up" onchange="smartUpload(this)" style="display:none">
-                <label for="up" class="btn-glow" style="display:block; text-align:center;">+ UPLOAD FILE</label>
-                <p id="status-text" style="font-size:11px; text-align:center; margin-top:8px; color:gray;">READY</p>
+                <input type="file" id="up" onchange="uploadFile(this)" style="display:none">
+                <label for="up" class="btn-glow" style="display:block; text-align:center;">+ UPLOAD TO THIS NODE</label>
+                <p id="status-text" style="font-size:10px; text-align:center; margin-top:8px; color:gray;">READY</p>
             </div>
 
-            <div class="vault-container">
-                <h3 class="folder-title">📁 FOLDER_01 (Project A)</h3>
-                <div id="list-1" class="file-list"></div>
-
-                <h3 class="folder-title">📁 FOLDER_02 (Project B)</h3>
-                <div id="list-2" class="file-list"></div>
-
-                <h3 class="folder-title">📁 FOLDER_03 (Project C)</h3>
-                <div id="list-3" class="file-list"></div>
-            </div>
+            <h3 class="logo">📁 FILES_IN_THIS_NODE</h3>
+            <div id="file-list"></div>
         </div>
     </div>
 
