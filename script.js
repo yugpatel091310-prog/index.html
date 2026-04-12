@@ -1,5 +1,5 @@
 // --- CONFIGURATION ---
-const p1 = { apiKey: "AIzaSyB3lbxW4AH3yY40xxgG0DGanY_6oXa13Zg", databaseURL: "https://sync-2-b5006-default-rtdb.firebaseio.com", storageBucket: "sync-2-b5006.firebasestorage.app", projectId: "sync-2-b5006" };
+const p1 = { apiKey: "AIzaSyB3lbxW4AH3yY40xxgG0DGanY_6oXa13Zg", databaseURL: "https://sync-2-b5006-default-rtdb.firebaseio.com/", storageBucket: "sync-2-b5006.firebasestorage.app", projectId: "sync-2-b5006" };
 const p2 = { apiKey: "AIzaSyDJ1bOtg-UdYs2R4uSgxomzJhBaIJxY6TA", databaseURL: "https://yugchatgo-default-rtdb.firebaseio.com/", storageBucket: "yugchatgo.firebasestorage.app", projectId: "yugchatgo" };
 const p3 = { apiKey: "AIzaSyCDwmQT8q_gL8TxFW8Atdl9JtRo3ywYj98", databaseURL: "https://chat-go12-default-rtdb.firebaseio.com/", storageBucket: "chat-go12.firebasestorage.app", projectId: "chat-go12" };
 
@@ -15,92 +15,45 @@ const db3 = app3.database(); const st3 = app3.storage();
 function handleAuth() {
     const u = document.getElementById('login-u').value.trim();
     const p = document.getElementById('login-p').value;
+    
+    // Check Project 1 for password
     db1.ref('admin_config').once('value', s => {
-        const data = s.val();
-        const storedPass = (data && data.pass) ? data.pass : "yugpatel1309";
+        const storedPass = (s.val() && s.val().pass) ? s.val().pass : "yugpatel1309";
         if (u === "Yug Patel" && p === storedPass) {
-            showPage('page-files');
-            loadAllVaults();
+            document.getElementById('page-login').classList.remove('active');
+            document.getElementById('page-files').classList.add('active');
+            loadAllVaults(); // This starts the folder "See Files" logic
         } else { alert("ACCESS_DENIED"); }
     });
 }
 
-function showPage(id) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-}
-
-function changeAdminPass() {
-    const np = document.getElementById('new-admin-p').value;
-    if(np.length < 4) return alert("Too short");
-    db1.ref('admin_config').update({ pass: np }).then(() => {
-        alert("Success!"); showPage('page-files');
-    });
-}
-
-// --- TURBO UPLOAD ENGINE ---
-async function smartUpload(el) {
-    const file = el.files[0];
-    if (!file) return;
-    const status = document.getElementById('status-text');
-    status.innerText = "INITIALIZING...";
-
-    let targetDB = db1, targetST = st1, vNum = 1;
-
-    try {
-        const fileName = Date.now() + "_" + file.name;
-        const ref = targetST.ref('vault/' + fileName);
-        const uploadTask = ref.put(file);
-
-        uploadTask.on('state_changed', 
-            (snapshot) => {
-                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                status.innerText = `UPLOADING: ${Math.round(progress)}%`;
-                status.style.color = "cyan";
-            }, 
-            (error) => {
-                console.error("FULL ERROR DETAILS:", error);
-                if (error.code === 'storage/unauthorized') {
-                    alert("RULES ERROR: Go to Firebase Storage > Rules and set 'allow read, write: if true;'");
-                } else if (error.code === 'storage/project-not-found') {
-                    alert("CONFIG ERROR: Your Bucket URL in the code is wrong!");
-                } else {
-                    alert("SYSTEM ERROR: " + error.code);
-                }
-                status.innerText = "FAILED";
-            }, 
-            async () => {
-                const url = await uploadTask.snapshot.ref.getDownloadURL();
-                await targetDB.ref('vault_meta').push({
-                    name: file.name,
-                    sName: fileName,
-                    url: url,
-                    type: file.type,
-                    size: file.size
-                });
-                status.innerText = "SUCCESS: VAULTED";
-                status.style.color = "#00ff00";
-            }
-        );
-    } catch (e) { status.innerText = "CRASH"; }
-}
-
-// --- DISPLAY ---
+// --- SEE FILES LOGIC (DESIGNATED FOLDERS) ---
 function loadAllVaults() {
-    const vaults = [{ d: db1, l: 'list-1', n: 1 }, { d: db2, l: 'list-2', n: 2 }, { d: db3, l: 'list-3', n: 3 }];
-    vaults.forEach(v => {
-        v.d.ref('vault_meta').on('value', s => {
-            const list = document.getElementById(v.l);
-            list.innerHTML = "";
-            s.forEach(child => {
-                const f = child.val();
-                list.innerHTML += `
-                    <div class="admin-card" style="display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-size:12px; color:cyan;">${f.name}</span>
+    const configs = [
+        { db: db1, listId: 'list-1' },
+        { db: db2, listId: 'list-2' },
+        { db: db3, listId: 'list-3' }
+    ];
+
+    configs.forEach(cfg => {
+        // This listener watches for changes in the database and updates the folder instantly
+        cfg.db.ref('vault_meta').on('value', snapshot => {
+            const listEl = document.getElementById(cfg.listId);
+            listEl.innerHTML = ""; // Clear current view
+            
+            if (!snapshot.exists()) {
+                listEl.innerHTML = "<p style='color:gray; font-size:10px;'>Folder is empty</p>";
+                return;
+            }
+
+            snapshot.forEach(child => {
+                const file = child.val();
+                listEl.innerHTML += `
+                    <div class="admin-card" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                        <span style="font-size:12px; color:cyan;">${file.name}</span>
                         <div style="display:flex; gap:5px;">
-                            <button class="nav-btn" onclick="preview('${f.url}','${f.type}')">👁️</button>
-                            <a href="${f.url}" target="_blank" class="nav-btn">📥</a>
-                            <button class="nav-btn" style="background:#600" onclick="delFile(${v.n}, '${child.key}', '${f.sName}')">🗑️</button>
+                            <button class="nav-btn" onclick="window.open('${file.url}')">👁️</button>
+                            <button class="nav-btn" style="background:#600" onclick="deleteFile('${cfg.listId}', '${child.key}', '${file.name}')">🗑️</button>
                         </div>
                     </div>`;
             });
@@ -108,17 +61,32 @@ function loadAllVaults() {
     });
 }
 
-function delFile(vNum, key, sName) {
-    if(!confirm("Delete?")) return;
-    const dbs = [db1, db2, db3]; const sts = [st1, st2, st3];
-    sts[vNum-1].ref('vault/' + sName).delete().catch(e => {});
-    dbs[vNum-1].ref('vault_meta/' + key).remove();
-}
+// --- UPLOAD LOGIC ---
+async function smartUpload(el) {
+    const file = el.files[0];
+    if (!file) return;
+    const status = document.getElementById('status-text');
+    status.innerText = "UPLOADING...";
 
-function preview(url, type) {
-    const div = document.createElement('div');
-    div.style = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center;";
-    let media = type.includes('image') ? `<img src="${url}" style="max-width:90%; border-radius:10px;">` : `<iframe src="${url}" style="width:90%; height:70%; background:#fff; border-radius:10px;"></iframe>`;
-    div.innerHTML = `<button onclick="this.parentElement.remove()" style="margin-bottom:20px; padding:10px 20px; background:red; border:none; color:white; border-radius:5px;">CLOSE</button>${media}`;
-    document.body.appendChild(div);
+    // For now, it uploads to Project 1. 
+    // You can add logic here to check size and switch to st2 or st3 later.
+    const storageRef = st1.ref('vault/' + file.name);
+    
+    try {
+        const snapshot = await storageRef.put(file);
+        const downloadURL = await snapshot.ref.getDownloadURL();
+        
+        // Save the info to the database so we can "see" it
+        await db1.ref('vault_meta').push({
+            name: file.name,
+            url: downloadURL,
+            size: file.size,
+            type: file.type
+        });
+        
+        status.innerText = "SUCCESS: FILE ADDED TO FOLDER 1";
+    } catch (error) {
+        console.error(error);
+        status.innerText = "ERROR: CHECK FIREBASE RULES";
+    }
 }
