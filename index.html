@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Private Neural Vault</title>
+    <title>Triple Project Vault</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div id="page-login" class="page active">
         <div class="auth-center">
-            <h1 class="neon-txt">VAULT_ACCESS</h1>
+            <h1 class="neon-txt">MASTER_LOGIN</h1>
             <input type="text" id="login-u" placeholder="ADMIN_ID">
             <input type="password" id="login-p" placeholder="ACCESS_KEY">
             <button class="btn-glow" onclick="handleAuth()">INITIALIZE</button>
@@ -19,38 +19,31 @@
 
     <div id="page-files" class="page">
         <div class="nav-bar">
-            <span class="logo">SECURE_FILES</span>
-            <div class="header-btns">
-                <button class="nav-btn" onclick="showPage('page-settings')">SETTINGS</button>
-                <button class="nav-btn red" onclick="location.reload()">EXIT</button>
-            </div>
+            <span class="logo">15GB_HYPER_VAULT</span>
+            <button class="nav-btn red" onclick="location.reload()">EXIT</button>
         </div>
         
         <div class="content-scroll">
-            <div class="admin-card" id="upload-zone">
-                <input type="file" id="up" onchange="upFile(this)" style="display:none">
-                <label for="up" class="btn-glow" style="display:block; text-align:center;">+ UPLOAD NEW FILE</label>
-            </div>
-            <div id="file-list"></div>
-        </div>
-    </div>
-
-    <div id="page-settings" class="page">
-        <div class="nav-bar">
-            <button class="nav-btn" onclick="showPage('page-files')">← BACK</button>
-            <span class="logo">ADMIN_SETTINGS</span>
-        </div>
-        <div class="content-scroll">
             <div class="admin-card">
-                <h3>CHANGE LOGIN PASSWORD</h3>
-                <input type="password" id="new-admin-p" placeholder="NEW_PASSWORD">
-                <button class="btn-glow" onclick="changeAdminPass()">UPDATE PASSWORD</button>
+                <input type="file" id="up" onchange="smartUpload(this)" style="display:none">
+                <label for="up" class="btn-glow" style="display:block; text-align:center;">+ UPLOAD TO NEXT AVAILABLE SLOT</label>
+                <p id="status-text" style="font-size:10px; text-align:center; margin-top:10px; color:gray;">Ready...</p>
             </div>
+
+            <h3 class="logo">📁 VAULT_01 (Project A)</h3>
+            <div id="list-1" class="folder-area"></div>
+
+            <h3 class="logo" style="margin-top:20px;">📁 VAULT_02 (Project B)</h3>
+            <div id="list-2" class="folder-area"></div>
+
+            <h3 class="logo" style="margin-top:20px;">📁 VAULT_03 (Project C)</h3>
+            <div id="list-3" class="folder-area"></div>
         </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
